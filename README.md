@@ -5,6 +5,20 @@ A simple steganography tool for teaching purposes in the Haskell course at the U
 
 The idea is to hide a text message within a binary file. This works well with image formats, because small changes to binary content don't corrupt the file and result in tiny changes to colour values of pixels, too small to be detected by the human eye. They can, or course, be detected by an image diff tool like ImageMagick's `compare` utility, but only if you have access to the original.
 
+Using the tool
+==============
+
+````
+steg$ cabal install
+steg$ cat message.txt
+Hi, how are you?
+steg$ steg bury image.pgm message.txt image2.pgm
+steg$ steg dig image2.pgm
+Hi, how are you?
+````
+How it works
+============
+
 First, encode an ASCII message as a binary sequence. For instance, in the string "ab", 'a' has the ASCII value 97, while 'b' is 98. The whole string is encoded as `0110000101100010`, which is the concatenation of the binary numbers equal to 97 and 98. 
 
 Then, take the *body* of a binary image file. The body is that part of the content which comes after a *header*, which contains metadata about the file, such as its format type, width and height, etc. The body contains the actual picture. Modify the data to overwrite the *least-significant bit* (LSB) of each byte so that it contains part of the binary-encoded message. Say we want to store the message "a", `01100001` in binary, and our image file uses a simple greyscale format in which each byte in the data represents a single pixel. The data might look as follows:
@@ -29,7 +43,7 @@ We need to change the last bit of every byte to the corresponding bit from the m
     pixel 7: 11011100 ---> 11011100 (no change)
     pixel 8: 10010000 ---> 10010001 (flip)
 ````
-Because this results in the change of a pixel's greyscale value from, say, 10 to 11, there is no human-visible effect. To extract the message, we collect the LSBs of modified:
+Because this results in the change of a pixel's greyscale value from, say, 10 to 11, there is no human-visible effect. To extract the message, we collect the LSBs of modified data:
 ````
     pixel 1: 0001010[0] 
     pixel 2: 1001000[1] 
