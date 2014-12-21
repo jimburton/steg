@@ -3,7 +3,7 @@
 
 name:                steg
 version:             0.1.0.0
-synopsis:            Simple stenography tool
+synopsis:            Simple steganography tool
 -- description:         
 license:             MIT
 license-file:        LICENSE
