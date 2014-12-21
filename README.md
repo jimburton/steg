@@ -7,8 +7,8 @@ The idea is to hide a text message within a binary file. This works well with im
 
 First, encode an ASCII message as a binary sequence. For instance, in the string "ab", 'a' has the ASCII value 97, while 'b' is 98. The whole string is encoded as `0110000101100010`, which is the concatenation of the binary numbers equal to 97 and 98. 
 
-Then, take the /body/ of a binary image file. The body is that part of the content which comes after a /header/, which contains metadata about the file, such as its format type, width and height, etc. The body contains the actual picture. Modify the data to overwrite the /least-significant bit/ (LSB) of each byte so that it contains part of the binary-encoded message. Say we want to store the message "a", `01100001` in binary, and our image file uses a simple greyscale format in which each byte in the data represents a single pixel. The data might look as follows:
-
+Then, take the *body* of a binary image file. The body is that part of the content which comes after a *header*, which contains metadata about the file, such as its format type, width and height, etc. The body contains the actual picture. Modify the data to overwrite the *least-significant bit* (LSB) of each byte so that it contains part of the binary-encoded message. Say we want to store the message "a", `01100001` in binary, and our image file uses a simple greyscale format in which each byte in the data represents a single pixel. The data might look as follows:
+````
     pixel 1: 00010101
     pixel 2: 10010001
     pixel 3: 01011111	
@@ -17,9 +17,9 @@ Then, take the /body/ of a binary image file. The body is that part of the conte
     pixel 6: 00010101
     pixel 7: 11011100
     pixel 8: 10010001
-
+````
 We need to change the last bit of every byte to the corresponding bit from the message, `01100001`:
-
+````
     pixel 1: 00010101 ---> 00010100 (flip)
     pixel 2: 10010001 ---> 10010001 (no change)
     pixel 3: 01011111 ---> 01011111 (no change)	
@@ -28,9 +28,9 @@ We need to change the last bit of every byte to the corresponding bit from the m
     pixel 6: 00010101 ---> 00010100 (flip)
     pixel 7: 11011100 ---> 11011100 (no change)
     pixel 8: 10010000 ---> 10010001 (flip)
-
+````
 Because this results in the change of a pixel's greyscale value from, say, 10 to 11, there is no human-visible effect. To extract the message, we collect the LSBs of modified:
-
+````
     pixel 1: 0001010[0] 
     pixel 2: 1001000[1] 
     pixel 3: 0101111[1] 
@@ -39,7 +39,7 @@ Because this results in the change of a pixel's greyscale value from, say, 10 to
     pixel 6: 0001010[0]
     pixel 7: 1101110[0]
     pixel 8: 1001000[1]
-
+````
 Giving us back the message `01100001`.
 
 Note that this would work just as well for RGB formats that represent each pixel by three bytes, but we would be changing fewer pixels. To make it easier to recover the message, we will want to know its length. So, the LSBs in the first few bytes will contain a number. If we are happy with 255 as the length of the longest message we can hide, the number can be stored in one byte, hidden in the LSBs of the first 8 bytes.   
@@ -49,5 +49,5 @@ Ways to improve the program
 
 * Add support for more image formats.
 * Change the CLI to use `System.GetOpt` and be more flexible by adding options to read in the message from `stdin`, output the result to `stdout` and so on. 
-* If you suspected that this technique might have been used to hide something in an image file, it would be easy enough to collect the LSBs and check whether they do represent a value in some character encoding. Increase the obfuscation by making the first thing that somes after the message length be an /offset/ and /step/, then start reading
-    at /offset/ and jump forward /step/ bytes to read the next LSB.
+* If you suspected that this technique might have been used to hide something in an image file, it would be easy enough to collect the LSBs and check whether they do represent a value in some character encoding. Increase the obfuscation by making the first thing that somes after the message length be an *offset* and *step*, then start reading
+    at *offset* and jump forward *step* bytes to read the next LSB.
