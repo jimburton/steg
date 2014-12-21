@@ -15,14 +15,12 @@ dispatch =  [ ("bury", buryAct)
 {-| Bury some text. -}
 buryAct :: [String] -> IO ()
 buryAct args = do
-  let (imgPath:txtPath:outPath:rest) = tail args
+  let (imgPath:txtPath:outPath:rest) = args
   bury imgPath txtPath outPath
   
 {-| Dig some text. -}
 digAct :: [String] -> IO ()
-digAct args = do
-  let (imgPath:txtPath:rest) = tail args
-  dig imgPath >>= putStrLn
+digAct (imgPath:_) = dig imgPath >>= putStrLn
 
 {-| The entry point for the program. -}
 main = do
