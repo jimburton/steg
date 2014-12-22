@@ -1,22 +1,32 @@
 module Steg.Format.BMP
     where
 
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Char8 as L8
-import           Steg.Format.StegFormat (Steg(..), StegBox(..))
+import           Steg.Format.StegFormat (Steg(..)
+                                        , StegBox(..))
+import           qualified Codec.BMP as BMP
 
 data BMPmap = BMPmap {
-      bmpHeader :: L.ByteString
-      , bmpData  :: L.ByteString
+      bmpHeader :: B.ByteString
+      , bmpData :: B.ByteString
+      , theBMP  :: BMP.BMP
     }
-
-instance Show BMPmap where
-    show (BMPmap _ _)       = "BMPmap"
 
 instance Steg BMPmap where
     getData     = bmpData
-    setData b d = b { bmpData = d }
+    setData b d = let innerBMP = theBMP b in
+                  b { bmpData = d 
+                    , theBMP = innerBMP { BMP.bmpRawImageData = d } }
     getHeader   = bmpHeader
+    sGetContents = L8.toStrict . BMP.renderBMP . theBMP
 
-parseBMP :: L.ByteString -> Maybe (StegBox, L8.ByteString)
-parseBMP = undefined
+{- | Parse a BMP from a ByteString. -}
+parseBMP :: B.ByteString -> Maybe StegBox
+parseBMP bs = case BMP.parseBMP (L8.fromChunks [bs]) of
+                Left _ -> Nothing
+                Right pic -> do
+                  let body   = BMP.bmpRawImageData pic
+                      size   = BMP.fileHeaderFileSize $ BMP.bmpFileHeader pic
+                      header = B.take (fromIntegral size) bs 
+                  Just $ StegBox (BMPmap header body pic)

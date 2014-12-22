@@ -1,12 +1,11 @@
 module Steg.Parse
-    (dig, bury)
+    (dig, bury, bury')
     where
 
 import           Control.Applicative ((<$>))
 import qualified Data.Binary.Strict.BitGet as BG
 import           Data.Bits (setBit, clearBit)
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Char (chr)
 import           Data.List (elemIndices)
@@ -15,7 +14,8 @@ import           Steg.Format.BMP
 import           Steg.Format.PGM
 import           Steg.Format.StegFormat (Steg(..)
                                         , StegBox(..)
-                                        , Format(..))
+                                        , Format(..)
+                                        , magicNumbers)
 
 setLSB :: Bool -> Word8 -> Word8
 setLSB b w = if b then setBit w 0 else clearBit w 0
@@ -26,70 +26,76 @@ wordToBits = pad . reverse . decToBin
           decToBin 0 = []
           decToBin y = let (a,b) = quotRem y 2 in b : decToBin a
 
-bsToBits :: L.ByteString -> [Word8]
+bsToBits :: B.ByteString -> [Word8]
 bsToBits = bsToBits' []
     where bsToBits' xs bs =  
-            let h = L.uncons bs in
+            let h = B.uncons bs in
             case h of
               Nothing -> xs
               Just (w, bs') -> bsToBits' (wordToBits w ++ xs) bs'
 
-modifyLSBs :: L.ByteString -> [Word8] -> L.ByteString
+modifyLSBs :: B.ByteString -> [Word8] -> B.ByteString
 modifyLSBs bs []     = bs
 modifyLSBs bs (w:ws) = 
-    let mw = L.uncons bs in
+    let mw = B.uncons bs in
     case mw of
-      Nothing -> L.empty
-      (Just (w', bs')) -> L.cons (setLSB (w==1) w') (modifyLSBs bs' ws) 
+      Nothing -> B.empty
+      (Just (w', bs')) -> B.cons (setLSB (w==1) w') (modifyLSBs bs' ws) 
 
-bsToSteg :: L.ByteString -> Maybe (StegBox, L8.ByteString)
+bsToSteg :: B.ByteString -> Maybe StegBox
 bsToSteg bs = 
     case idHeader bs of
-      PGM -> parsePGM bs
-      BMP -> parseBMP bs
+      Just PGM -> parsePGM bs
+      Just BMP -> parseBMP bs
+      Nothing  -> Nothing
                       
-idHeader :: L.ByteString -> Format
-idHeader _ = PGM
+idHeader :: B.ByteString -> Maybe Format
+idHeader bs = let mn = L8.unpack $ L8.fromChunks [B.take 2 bs] in
+              lookup mn magicNumbers
 
 bury :: FilePath -> FilePath -> FilePath -> IO ()
-bury binPath txtPath outPath = do
-  mg <- bsToSteg <$> L.readFile binPath
-  case mg of
-    Nothing -> return ()
-    Just (StegBox g, _) -> do
-      s <- L8.readFile txtPath
-      if L8.length s > 255
-      then error "Can only store 255 characters"
-      else do
-        let lenWord  = fromIntegral (L8.length s) :: Word8
-            lenWBits = bsToBits (L.cons lenWord L.empty)
-            bits     = lenWBits ++ bsToBits s 
-            g'       = setData g (modifyLSBs (getData g) bits)
-        output outPath (StegBox g')
+bury inPath txtPath outPath = B.readFile txtPath >>= bury' inPath outPath
+
+bury' :: FilePath -> FilePath -> B.ByteString ->IO ()
+bury' inPath outPath bs = 
+    if B.length bs > 255
+    then error "Can only store 255 characters"
+    else do
+      mg <- bsToSteg <$> B.readFile inPath
+      case mg of
+        Nothing -> return ()
+        Just (StegBox g) -> 
+            do
+              let bs'      = L8.toStrict $ L8.filter (/='\n') (L8.fromChunks [bs])
+                  lenWord  = fromIntegral (B.length bs') :: Word8
+                  lenWBits = bsToBits (B.cons lenWord B.empty)
+                  bits     = lenWBits ++ bsToBits bs' 
+                  g'       = setData g (modifyLSBs (getData g) bits)
+              output outPath $ StegBox g'
 
 output :: FilePath -> StegBox -> IO ()
 output path (StegBox s) = 
-  L.writeFile path (L.concat [getHeader s, nl, getData s])
-   where nl = L8.cons '\n' L8.empty
+  B.writeFile path $ sGetContents s
 
 dig :: FilePath -> IO (Maybe String)
 dig binPath = do
-  mg <- bsToSteg <$> L.readFile binPath
+  mg <- bsToSteg <$> B.readFile binPath
   case mg of 
     Nothing -> return Nothing
-    Just (StegBox g, _) -> do
+    Just (StegBox g) -> do
        let lsbs   = getLSBs $ getData g
-           bitLen = 8 * binToDec (take 8 lsbs) 
-       return $ Just (reverse $ filter (/= '\'') $ 
-                       boolsToStr (take bitLen (drop 8 lsbs)))
+           bitLen = 8 * binToDec (take 8 lsbs)
+           result = reverse $ filter (\c -> c/='\'' && c/='\n') $ 
+                       boolsToStr (take bitLen (drop 8 lsbs))
+       return $ Just result
 
 boolsToStr :: [Bool] -> String
 boolsToStr bs = if length bs < 8 
                 then ""
                 else show (chr $ binToDec (take 8 bs)) ++ boolsToStr (drop 8 bs)
 
-getLSBs :: L.ByteString -> [Bool]
-getLSBs bs = let mw = L.uncons bs in
+getLSBs :: B.ByteString -> [Bool]
+getLSBs bs = let mw = B.uncons bs in
              case mw of
                Nothing -> []
                (Just (w', bs')) -> 

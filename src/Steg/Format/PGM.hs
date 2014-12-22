@@ -13,7 +13,7 @@ module Steg.Format.PGM
     (parsePGM)
     where
 
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Char (isSpace)
 import           Data.List (intersperse)
@@ -25,77 +25,74 @@ import           Steg.Format.StegFormat (Steg(..)
      for Show and Steg.
 . -}
 data PGMmap = PGMmap {
-      pgmWidth :: Int
-    , pgmHeight :: Int
-    , pgmMax :: Int
-    , pgmData :: L.ByteString
+      pgmHeader :: B.ByteString
+    , pgmData   :: B.ByteString
     } 
 
-instance Show PGMmap where
-    show (PGMmap w h m _) = "PGMmap " ++ show w ++ "x" ++ show h ++
-                             " " ++ show m
 instance Steg PGMmap where
     getData     = pgmData
     setData g d = g { pgmData = d }
-    getHeader   = pgmHeader
+    getHeader g = pgmHeader g
+    sGetContents g = B.concat [getHeader g, getData g]
 
-{- | Retrieve the header of a PGM. -}
-pgmHeader :: PGMmap -> L.ByteString 
-pgmHeader (PGMmap w h m _) = L.concat $ intersperse nl [magicNumber
-                             , signature
-                             , L8.pack $ show w ++ " " ++ show h
-                             , L8.pack $ show m] 
+nl :: B.ByteString
+nl = L8.toStrict $ L8.cons '\n' L8.empty
 
-{- | The magic number that identifies a PGM. -}
-magicNumber :: L8.ByteString
-magicNumber = L8.pack "P5"
-
-nl :: L8.ByteString
-nl = L8.cons '\n' L8.empty
+magicPGM :: B.ByteString
+magicPGM = L8.toStrict $ L8.pack "P5"
 
 {- | Parse a PGM from a ByteString. -}
-parsePGM :: L.ByteString -> Maybe (StegBox, L.ByteString)
+parsePGM :: B.ByteString -> Maybe StegBox
 parsePGM s =
-    matchHeader magicNumber s        >>=
-    \s' -> skipSpace ((), s')        >>=
-    \(_, s') -> skipComment ((), s') >>=
+    matchHeader magicPGM s  >>=
+    \s1 -> skipSpace ((), s1)        >>=
+    \(_, s2) -> skipComment ((), s2) >>=
     (getNat . snd)                   >>=
     skipSpace                        >>=
-    \(width, s') ->   getNat s'      >>=
+    \(w, s3) ->   getNat s3      >>=
     skipSpace                        >>=
-    \(height, s') ->  getNat s'      >>=
-    \(maxGrey, s') -> getBytes 1 s'  >>=
-    (getBytes (width * height) . snd)  >>=
-    \(bitmap, s') -> Just (StegBox (PGMmap width height maxGrey bitmap), s')
+    \(h, s4) ->  getNat s4      >>=
+    \(m, s5) -> getBytes 1 s5  >>=
+    (getBytes (w * h) . snd)  >>=
+    \(bitmap, _) -> let header = B.concat $ init $ intersperse nl 
+                                 [magicPGM
+                                 , signature
+                                 , L8.toStrict $ L8.pack $ show w ++ " " ++ show h
+                                 , L8.toStrict $ L8.pack $ show m
+                                 , B.empty] in
+                    Just $ StegBox (PGMmap header bitmap)
 
-matchHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
-matchHeader prefix str
-    | prefix `L8.isPrefixOf` str
-        = Just (L8.dropWhile isSpace (L.drop (L.length prefix) str))
-    | otherwise
-        = Nothing
+matchHeader :: B.ByteString -> B.ByteString -> Maybe B.ByteString
+matchHeader prefix str = let prefixL = L8.fromChunks [prefix]
+                             strL    = L8.fromChunks [str] in
+                         if prefixL `L8.isPrefixOf` strL then
+                             Just (L8.toStrict $ 
+                                     L8.dropWhile isSpace 
+                                           (L8.drop (L8.length prefixL) strL))
+                         else Nothing
 
-getNat :: L.ByteString -> Maybe (Int, L.ByteString)
-getNat s = case L8.readInt s of
-             Nothing -> Nothing
-             Just (num,rest)
-                 | num <= 0    -> Nothing
-                 | otherwise   -> Just (fromIntegral num, rest)
+getNat :: B.ByteString -> Maybe (Int, B.ByteString)
+getNat bs = case L8.readInt (L8.fromChunks [bs]) of
+              Nothing -> Nothing
+              Just (num,rest)
+                  | num <= 0    -> Nothing
+                  | otherwise   -> Just (fromIntegral num, L8.toStrict rest)
 
-getBytes :: Int -> L.ByteString
-         -> Maybe (L.ByteString, L.ByteString)
-getBytes n str = let count           = fromIntegral n
-                     both@(prefix,_) = L.splitAt count str
-                 in if L.length prefix < count
-                    then Nothing
-                    else Just both
+getBytes :: Int -> B.ByteString
+         -> Maybe (B.ByteString, B.ByteString)
+getBytes n bs = let count           = fromIntegral n
+                    both@(prefix,_) = B.splitAt count bs
+                in if B.length prefix < count
+                   then Nothing
+                   else Just both
 
-skipSpace :: (a, L.ByteString) -> Maybe (a, L.ByteString)
-skipSpace (a, s) = Just (a, L8.dropWhile isSpace s)
+skipSpace :: (a, B.ByteString) -> Maybe (a, B.ByteString)
+skipSpace (a, bs) = Just (a, L8.toStrict $ L8.dropWhile isSpace (L8.fromChunks [bs]))
 
-skipComment :: (a, L.ByteString) -> Maybe (a, L.ByteString)
-skipComment (a, s) = let s' = if L8.head s == '#'
-                              then L.tail $ snd $ L8.span (/= '\n') s
-                              else s
-                     in Just (a, s')
+skipComment :: (a, B.ByteString) -> Maybe (a, B.ByteString)
+skipComment (a, bs) = let bs'  = L8.fromChunks [bs] 
+                          bs'' = if L8.head bs' == '#'
+                                 then L8.tail $ snd $ L8.span (/= '\n') bs'
+                                 else bs'
+                      in Just (a, L8.toStrict bs'')
 

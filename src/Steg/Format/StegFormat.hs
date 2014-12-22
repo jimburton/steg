@@ -14,10 +14,11 @@ module Steg.Format.StegFormat
     (Steg(..)
     , StegBox(..)
     , Format(..)
-    , signature)
+    , signature
+    , magicNumbers)
     where
     
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Char8 as L8
 
 {- | StegBox is a wrapper type that uses an existential type to
@@ -29,15 +30,20 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 data StegBox = forall n. Steg n => StegBox n
 
 {- | Steg is the type of image formats used by the program. -}
-class Show t => Steg t where
-    getData   :: t -> L.ByteString
-    setData   :: t -> L.ByteString -> t
-    getHeader :: t -> L.ByteString
+class Steg t where
+    getData   :: t -> B.ByteString
+    setData   :: t -> B.ByteString -> t
+    getHeader :: t -> B.ByteString
+    sGetContents :: t -> B.ByteString
     
 {- | Format is an enumerated type used to identify what kind of 
      image fie is being parsed. 
 -}
-data Format = PGM | BMP
+data Format = PGM | BMP deriving (Show, Eq, Ord)
 
-signature :: L8.ByteString
-signature = L8.pack "# CREATOR: steg v0.1"
+signature :: B.ByteString
+signature = L8.toStrict $ L8.pack "# CREATOR: steg v0.1"
+
+{- | Lookup from magic numbers to Formats. -}
+magicNumbers :: [(String, Format)]
+magicNumbers = [("P5", PGM), ("BM", BMP)]

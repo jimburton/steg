@@ -12,6 +12,7 @@ Portability :  portable
 module Main
     where
 
+import Data.Maybe (fromJust)
 import Steg.Parse (dig, bury)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode (ExitFailure))
@@ -22,20 +23,16 @@ dispatch =  [ ("bury", buryAct)
             , ("dig", digAct)  
             ]  
 
+
 {-| Bury some text. -}
 buryAct :: [String] -> IO ()
 buryAct args = do
   let (imgPath:txtPath:outPath:_) = args
   bury imgPath txtPath outPath
   
-{-| Print the result of digging some text. -}
+{-| Dig some text. -}
 digAct :: [String] -> IO ()
-digAct (imgPath:_) = dig imgPath >>= \e ->
-                     case e of 
-                       Nothing -> do
-                              putStrLn "Error: could not parse file" 
-                              exitWith (ExitFailure 1)
-                       (Just msg) -> putStrLn msg
+digAct (imgPath:_) = dig imgPath >>= putStrLn . fromJust
 
 {-| The entry point for the program. -}
 main :: IO ()
