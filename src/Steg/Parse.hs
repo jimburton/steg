@@ -1,3 +1,14 @@
+{- |
+Module      :  Parse.hs
+Description :  Parsing and modifying binary files
+Copyright   :  (c) Jim Burton
+License     :  MIT
+
+Maintainer  :  j.burton@brighton.ac.uk
+Stability   :  provisional 
+Portability :  portable 
+
+-}
 module Steg.Parse
     (dig, bury, bury')
     where
@@ -17,15 +28,18 @@ import           Steg.Format.StegFormat (Steg(..)
                                         , Format(..)
                                         , magicNumbers)
 
+-- | Set the LSB in an 8-bit Word.
 setLSB :: Bool -> Word8 -> Word8
 setLSB b w = if b then setBit w 0 else clearBit w 0
 
+-- | Transform an 8-bit Word into a list of Bools.
 wordToBits :: Integral a => a -> [a]
 wordToBits = pad . reverse . decToBin 
     where pad xs     = replicate (8 - length xs) 0 ++ xs
           decToBin 0 = []
           decToBin y = let (a,b) = quotRem y 2 in b : decToBin a
 
+-- | Transform a ByteString into a list of Words.
 bsToBits :: B.ByteString -> [Word8]
 bsToBits = bsToBits' []
     where bsToBits' xs bs =  
@@ -34,6 +48,7 @@ bsToBits = bsToBits' []
               Nothing -> xs
               Just (w, bs') -> bsToBits' (wordToBits w ++ xs) bs'
 
+-- | Modify the LSB in each byte of the first argument.
 modifyLSBs :: B.ByteString -> [Word8] -> B.ByteString
 modifyLSBs bs []     = bs
 modifyLSBs bs (w:ws) = 
@@ -42,20 +57,26 @@ modifyLSBs bs (w:ws) =
       Nothing -> B.empty
       (Just (w', bs')) -> B.cons (setLSB (w==1) w') (modifyLSBs bs' ws) 
 
+-- | Parse a ByteString 
 bsToSteg :: B.ByteString -> Maybe StegBox
 bsToSteg bs = 
     case idHeader bs of
       Just PGM -> parsePGM bs
       Just BMP -> parseBMP bs
       Nothing  -> Nothing
-                      
+               
+-- | Identify the format of some data from its magic number.
 idHeader :: B.ByteString -> Maybe Format
 idHeader bs = let mn = L8.unpack $ L8.fromChunks [B.take 2 bs] in
               lookup mn magicNumbers
 
+-- | Bury some text in the data read in from the first file, writing
+-- | the result out to the second file.
 bury :: FilePath -> FilePath -> FilePath -> IO ()
 bury inPath txtPath outPath = B.readFile txtPath >>= bury' inPath outPath
 
+-- | A function like bury but which takes the message as a ByteString.
+-- | Included to make testing easier.
 bury' :: FilePath -> FilePath -> B.ByteString ->IO ()
 bury' inPath outPath bs = 
     if B.length bs > 255
@@ -73,10 +94,12 @@ bury' inPath outPath bs =
                   g'       = setData g (modifyLSBs (getData g) bits)
               output outPath $ StegBox g'
 
+-- | Write some data out to a file.
 output :: FilePath -> StegBox -> IO ()
 output path (StegBox s) = 
   B.writeFile path $ sGetContents s
 
+-- | Read in a file and try to construct a message from the contents of the LSBs.
 dig :: FilePath -> IO (Maybe String)
 dig binPath = do
   mg <- bsToSteg <$> B.readFile binPath
@@ -89,11 +112,13 @@ dig binPath = do
                        boolsToStr (take bitLen (drop 8 lsbs))
        return $ Just result
 
+-- | Transform a list of Bools (Bits) into a String.
 boolsToStr :: [Bool] -> String
 boolsToStr bs = if length bs < 8 
                 then ""
                 else show (chr $ binToDec (take 8 bs)) ++ boolsToStr (drop 8 bs)
 
+-- | Collect the LSBs from the bytes in a ByteString.
 getLSBs :: B.ByteString -> [Bool]
 getLSBs bs = let mw = B.uncons bs in
              case mw of
@@ -104,9 +129,11 @@ getLSBs bs = let mw = B.uncons bs in
                        (Left s) -> error s
                        (Right b) -> b : getLSBs bs'
 
+-- | Convert binary to decimal.
 binToDec :: [Bool] -> Int
 binToDec l = sum $ map (2^) $ elemIndices True $ reverse l
   
+-- | Get the LSB from a ByteString, which should contain a single word.
 getLSB :: B.ByteString -> Either String Bool
 getLSB bs = BG.runBitGet bs $ do
     BG.skip 7

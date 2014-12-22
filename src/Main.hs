@@ -17,24 +17,24 @@ import Steg.Parse (dig, bury)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode (ExitFailure))
 
-{-| Lookup table mapping command-line options to functions. -}
+-- | Lookup table mapping command-line options to functions. 
 dispatch :: [(String, [String] -> IO ())]  
 dispatch =  [ ("bury", buryAct)  
             , ("dig", digAct)  
             ]  
 
 
-{-| Bury some text. -}
+-- | Bury some text. 
 buryAct :: [String] -> IO ()
 buryAct args = do
   let (imgPath:txtPath:outPath:_) = args
   bury imgPath txtPath outPath
   
-{-| Dig some text. -}
+-- | Dig some text. 
 digAct :: [String] -> IO ()
 digAct (imgPath:_) = dig imgPath >>= putStrLn . fromJust
 
-{-| The entry point for the program. -}
+-- | The entry point for the program. 
 main :: IO ()
 main = do
   args <- getArgs

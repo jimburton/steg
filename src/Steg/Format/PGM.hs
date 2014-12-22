@@ -21,9 +21,9 @@ import           Steg.Format.StegFormat (Steg(..)
                                         , StegBox(..)
                                         , signature)
 
-{- | The data type of PGM image files, with instance declarations 
-     for Show and Steg.
-. -}
+-- | The data type of PGM image files, with instance declarations 
+-- |     for Show and Steg.
+
 data PGMmap = PGMmap {
       pgmHeader :: B.ByteString
     , pgmData   :: B.ByteString
@@ -41,7 +41,7 @@ nl = L8.toStrict $ L8.cons '\n' L8.empty
 magicPGM :: B.ByteString
 magicPGM = L8.toStrict $ L8.pack "P5"
 
-{- | Parse a PGM from a ByteString. -}
+-- | Parse a PGM from a ByteString. 
 parsePGM :: B.ByteString -> Maybe StegBox
 parsePGM s =
     matchHeader magicPGM s  >>=

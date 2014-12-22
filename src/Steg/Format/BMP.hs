@@ -1,3 +1,14 @@
+{- |
+Module      :  BMP.hs
+Description :  Parsing Windows Bitmap (BMP) files
+Copyright   :  (c) Jim Burton
+License     :  MIT
+
+Maintainer  :  j.burton@brighton.ac.uk
+Stability   :  provisional 
+Portability :  portable 
+
+-}
 module Steg.Format.BMP
     where
 
@@ -7,6 +18,7 @@ import           Steg.Format.StegFormat (Steg(..)
                                         , StegBox(..))
 import           qualified Codec.BMP as BMP
 
+-- | The type of parsed BMPs
 data BMPmap = BMPmap {
       bmpHeader :: B.ByteString
       , bmpData :: B.ByteString
@@ -21,7 +33,7 @@ instance Steg BMPmap where
     getHeader   = bmpHeader
     sGetContents = L8.toStrict . BMP.renderBMP . theBMP
 
-{- | Parse a BMP from a ByteString. -}
+-- | Parse a BMP from a ByteString. 
 parseBMP :: B.ByteString -> Maybe StegBox
 parseBMP bs = case BMP.parseBMP (L8.fromChunks [bs]) of
                 Left _ -> Nothing

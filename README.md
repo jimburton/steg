@@ -3,7 +3,7 @@ steg
 
 A simple [steganography](http://en.wikipedia.org/wiki/Steganography) tool for teaching purposes in the Haskell course at the University of Brighton. It is used to demonstrate approaches to parsing and refactoring techniques, through refinements to an initial solution.
 
-The idea is to hide a text message within a binary file. This works well with image formats, because small changes to binary content don't corrupt the file and result in tiny changes to colour values of pixels, too small to be detected by the human eye. They can, or course, be detected by an image diff tool like ImageMagick's `compare` utility, but only if you have access to the original.
+The idea is to hide a text message within a binary file. This works well with image formats, because small changes to binary content don't corrupt the file and result in tiny changes to colour values of pixels, too small to be detected by the human eye. They can, or course, be detected by an image diff tool like ImageMagick's `compare` utility, but only if you have access to the original. steg works for RAW PGM (greyscale) files and Windows Bitmap (BMP) files so far.
 
 Using the tool
 ==============
