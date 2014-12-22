@@ -21,38 +21,38 @@ How it works
 
 First, encode an ASCII message as a binary sequence. For instance, in the string "ab", 'a' has the ASCII value 97, while 'b' is 98. The whole string is encoded as `0110000101100010`, which is the concatenation of the binary numbers equal to 97 and 98. 
 
-Then, take the *body* of a binary image file. The body is that part of the content which comes after a *header*, which contains metadata about the file, such as its format type, width and height, etc. The body contains the actual picture. Modify the data to overwrite the *least-significant bit* (LSB) of each byte so that it contains part of the binary-encoded message. Say we want to store the message "a", `01100001` in binary, and our image file uses a simple greyscale format in which each byte in the data represents a single pixel. The data might look as follows:
+Then, take the *body* of a binary image file. The body is that part of the content which comes after a *header*, which contains metadata about the file, such as its format type, width and height, etc. The body contains the actual picture. Modify the data to overwrite the *least-significant bit* (LSB) of each byte so that it contains part of the binary-encoded message. Say we want to store the message "a", `01100001` in binary, and our image file uses a simple greyscale format in which each byte in the data represents a single pixel. The first eight bytes of the data might look as follows:
 ````
-    pixel 1: 00010101
-    pixel 2: 10010001
-    pixel 3: 01011111	
-    pixel 4: 10111100
-    pixel 5: 10010001
-    pixel 6: 00010101
-    pixel 7: 11011100
-    pixel 8: 10010001
+    00010101
+    10010001
+    01011111	
+    10111100
+    10010001
+    00010101
+    11011100
+    10010001
 ````
 We need to change the last bit of every byte to the corresponding bit from the message, `01100001`:
 ````
-    pixel 1: 00010101 ---> 00010100 (flip)
-    pixel 2: 10010001 ---> 10010001 (no change)
-    pixel 3: 01011111 ---> 01011111 (no change)	
-    pixel 4: 10111100 ---> 10111100 (no change)
-    pixel 5: 10010001 ---> 10010000 (flip)
-    pixel 6: 00010101 ---> 00010100 (flip)
-    pixel 7: 11011100 ---> 11011100 (no change)
-    pixel 8: 10010000 ---> 10010001 (flip)
+    00010101 ---> 00010100 (flip)
+    10010001 ---> 10010001 (no change)
+    01011111 ---> 01011111 (no change)	
+    10111100 ---> 10111100 (no change)
+    10010001 ---> 10010000 (flip)
+    00010101 ---> 00010100 (flip)
+    11011100 ---> 11011100 (no change)
+    10010000 ---> 10010001 (flip)
 ````
 Because this results in the change of a pixel's greyscale value from, say, 10 to 11, there is no human-visible effect. To extract the message, we collect the LSBs of modified data:
 ````
-    pixel 1: 0001010[0] 
-    pixel 2: 1001000[1] 
-    pixel 3: 0101111[1] 
-    pixel 4: 1011110[0] 
-    pixel 5: 1001000[0]
-    pixel 6: 0001010[0]
-    pixel 7: 1101110[0]
-    pixel 8: 1001000[1]
+    0001010[0] 
+    1001000[1] 
+    0101111[1] 
+    1011110[0] 
+    1001000[0]
+    0001010[0]
+    1101110[0]
+    1001000[1]
 ````
 Giving us back the message `01100001`.
 

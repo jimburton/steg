@@ -15,7 +15,7 @@ import           Data.Word (Word8)
 import           Data.Word8 (_cr)
 import           Steg.Format.BMP
 import           Steg.Format.PGM
-import           Steg.Format.StegFormat (Steg, getData, setData, StegFormat(..))
+import           Steg.Format.StegFormat (Steg(..), StegBox(..))
 import           Steg.Info (Format(..), signature)
 
 countWords :: Steg t => t -> Int64
@@ -46,8 +46,8 @@ modifyLSBs bs (w:ws) =
       Nothing -> L.empty
       (Just (w', bs')) -> L.cons (setLSB (w==1) w') (modifyLSBs bs' ws) 
 
-bsToStegFormat :: L.ByteString -> Maybe (StegFormat, L8.ByteString)
-bsToStegFormat bs = 
+bsToSteg :: L.ByteString -> Maybe (StegBox, L8.ByteString)
+bsToSteg bs = 
     case idHeader bs of
       PGM -> parsePGM bs
       BMP -> parseBMP bs
@@ -57,10 +57,10 @@ idHeader _ = PGM
 
 bury :: FilePath -> FilePath -> FilePath -> IO ()
 bury binPath txtPath outPath = do
-  mg <- bsToStegFormat <$> L.readFile binPath
+  mg <- bsToSteg <$> L.readFile binPath
   case mg of
     Nothing -> return ()
-    Just (g, _) -> do
+    Just (StegBox g, _) -> do
       s <- L8.readFile txtPath
       if L8.length s > 255
       then error "Can only store 255 characters"
@@ -69,16 +69,14 @@ bury binPath txtPath outPath = do
             lenWBits = bsToBits (L.cons lenWord L.empty)
             bits     = lenWBits ++ bsToBits s 
             g'       = setData g (modifyLSBs (getData g) bits)
-        case g of
-          PGMmap {} -> outputPGM outPath g'
-          BMPmap {} -> outputBMP outPath g'
+        output outPath (StegBox g')
 
 dig :: FilePath -> IO String
 dig binPath = do
-  mg <- bsToStegFormat <$> L.readFile binPath
+  mg <- bsToSteg <$> L.readFile binPath
   case mg of 
     Nothing -> return ""
-    Just (g, _) -> do
+    Just (StegBox g, _) -> do
        let lsbs   = getLSBs $ getData g
            bitLen = 8 * binToDec (take 8 lsbs) 
        return $ reverse $ filter (/= '\'') $ boolsToStr (take bitLen (drop 8 lsbs))
@@ -112,3 +110,7 @@ getLSB :: B.ByteString -> Either String Bool
 getLSB bs = BG.runBitGet bs $ do
     BG.skip 7
     BG.getBit 
+
+output :: FilePath -> StegBox -> IO ()
+output path (StegBox s) = 
+  L.writeFile path (L.concat $ [getHeader s, nl, getData s])

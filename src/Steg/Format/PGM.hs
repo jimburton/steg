@@ -4,14 +4,37 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Char (isSpace)
 import           Data.List (intersperse)
-import           Steg.Format.StegFormat (Steg, StegFormat(PGMmap))
+import           Steg.Format.StegFormat (Steg(..), StegBox(..))
 import           Steg.Info (signature)
 
-magicString = L8.pack "P5"
+data PGMmap = PGMmap {
+      pgmWidth :: Int
+    , pgmHeight :: Int
+    , pgmMax :: Int
+    , pgmData :: L.ByteString
+    } 
 
-parsePGM :: L.ByteString -> Maybe (StegFormat, L.ByteString)
+instance Show PGMmap where
+    show (PGMmap w h m _) = "PGMmap " ++ show w ++ "x" ++ show h ++
+                             " " ++ show m
+instance Steg PGMmap where
+    getData     = pgmData
+    setData g d = g { pgmData = d }
+    getHeader   = pgmHeader
+
+pgmHeader :: PGMmap -> L.ByteString 
+pgmHeader (PGMmap w h m d) = L.concat $ intersperse nl [magicNumber
+                             , signature
+                             , L8.pack $ show w ++ " " ++ show h
+                             , L8.pack $ show m] 
+
+magicNumber = L8.pack "P5"
+
+nl = L8.cons '\n' L8.empty
+
+parsePGM :: L.ByteString -> Maybe (StegBox, L.ByteString)
 parsePGM s =
-    matchHeader magicString s         >>=
+    matchHeader magicNumber s         >>=
     \s -> skipSpace ((), s)           >>=
     \(_, s) -> skipComment ((), s)    >>=
     (getNat . snd)                    >>=
@@ -21,7 +44,7 @@ parsePGM s =
     \(height, s) ->  getNat s         >>=
     \(maxGrey, s) -> getBytes 1 s     >>=
     (getBytes (width * height) . snd) >>=
-    \(bitmap, s) -> Just (PGMmap width height maxGrey bitmap, s)
+    \(bitmap, s) -> Just (StegBox (PGMmap width height maxGrey bitmap), s)
 
 matchHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 matchHeader prefix str
@@ -54,11 +77,3 @@ skipComment (a, s) = let s' = if L8.head s == '#'
                               else s
                      in Just (a, s')
 
-outputPGM :: FilePath -> StegFormat -> IO ()
-outputPGM path (PGMmap w h m d) = 
-  L.writeFile path (L.concat $ intersperse nl [magicString
-                             , signature
-                             , L8.pack $ show w ++ " " ++ show h
-                             , L8.pack $ show m
-                             , d])
-    where nl = L8.cons '\n' L8.empty 
