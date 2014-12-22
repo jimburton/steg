@@ -9,17 +9,13 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Char (chr)
-import           Data.Int (Int64)
 import           Data.List (elemIndices)
-import           Data.Word (Word8)
-import           Data.Word8 (_cr)
+import           Data.Word8 (Word8)
 import           Steg.Format.BMP
 import           Steg.Format.PGM
-import           Steg.Format.StegFormat (Steg(..), StegBox(..))
-import           Steg.Info (Format(..), signature)
-
-countWords :: Steg t => t -> Int64
-countWords = L.length . getData 
+import           Steg.Format.StegFormat (Steg(..)
+                                        , StegBox(..)
+                                        , Format(..))
 
 setLSB :: Bool -> Word8 -> Word8
 setLSB b w = if b then setBit w 0 else clearBit w 0
@@ -71,20 +67,22 @@ bury binPath txtPath outPath = do
             g'       = setData g (modifyLSBs (getData g) bits)
         output outPath (StegBox g')
 
-dig :: FilePath -> IO String
+output :: FilePath -> StegBox -> IO ()
+output path (StegBox s) = 
+  L.writeFile path (L.concat [getHeader s, nl, getData s])
+   where nl = L8.cons '\n' L8.empty
+
+dig :: FilePath -> IO (Maybe String)
 dig binPath = do
   mg <- bsToSteg <$> L.readFile binPath
   case mg of 
-    Nothing -> return ""
+    Nothing -> return Nothing
     Just (StegBox g, _) -> do
        let lsbs   = getLSBs $ getData g
            bitLen = 8 * binToDec (take 8 lsbs) 
-       return $ reverse $ filter (/= '\'') $ boolsToStr (take bitLen (drop 8 lsbs))
+       return $ Just (reverse $ filter (/= '\'') $ 
+                       boolsToStr (take bitLen (drop 8 lsbs)))
 
-msgLen :: Steg t => t -> Int
-msgLen g = let lsbs = getLSBs $ getData g in
-               binToDec $ take 8 lsbs 
-                  
 boolsToStr :: [Bool] -> String
 boolsToStr bs = if length bs < 8 
                 then ""
@@ -103,14 +101,7 @@ getLSBs bs = let mw = L.uncons bs in
 binToDec :: [Bool] -> Int
 binToDec l = sum $ map (2^) $ elemIndices True $ reverse l
   
-toStrict :: L.ByteString -> B.ByteString
-toStrict = B.concat . L.toChunks
-
 getLSB :: B.ByteString -> Either String Bool
 getLSB bs = BG.runBitGet bs $ do
     BG.skip 7
     BG.getBit 
-
-output :: FilePath -> StegBox -> IO ()
-output path (StegBox s) = 
-  L.writeFile path (L.concat $ [getHeader s, nl, getData s])

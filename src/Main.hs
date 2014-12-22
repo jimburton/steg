@@ -1,7 +1,17 @@
+{- |
+Module      :  Main.hs
+Description :  Entry point for the steg program
+Copyright   :  (c) Jim Burton
+License     :  MIT
+
+Maintainer  :  j.burton@brighton.ac.uk
+Stability   :  provisional 
+Portability :  portable 
+
+-}
 module Main
     where
 
-import Data.Maybe (fromJust)
 import Steg.Parse (dig, bury)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode (ExitFailure))
@@ -15,14 +25,20 @@ dispatch =  [ ("bury", buryAct)
 {-| Bury some text. -}
 buryAct :: [String] -> IO ()
 buryAct args = do
-  let (imgPath:txtPath:outPath:rest) = args
+  let (imgPath:txtPath:outPath:_) = args
   bury imgPath txtPath outPath
   
-{-| Dig some text. -}
+{-| Print the result of digging some text. -}
 digAct :: [String] -> IO ()
-digAct (imgPath:_) = dig imgPath >>= putStrLn
+digAct (imgPath:_) = dig imgPath >>= \e ->
+                     case e of 
+                       Nothing -> do
+                              putStrLn "Error: could not parse file" 
+                              exitWith (ExitFailure 1)
+                       (Just msg) -> putStrLn msg
 
 {-| The entry point for the program. -}
+main :: IO ()
 main = do
   args <- getArgs
   if null args 

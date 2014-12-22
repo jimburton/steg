@@ -1,12 +1,29 @@
-module Steg.Format.PGM where
+{- |
+Module      :  PGM.hs
+Description :  Code relating to parsing PGM files.
+Copyright   :  (c) Jim Burton
+License     :  MIT
+
+Maintainer  :  j.burton@brighton.ac.uk
+Stability   :  provisional 
+Portability :  portable 
+
+-}
+module Steg.Format.PGM 
+    (parsePGM)
+    where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Char (isSpace)
 import           Data.List (intersperse)
-import           Steg.Format.StegFormat (Steg(..), StegBox(..))
-import           Steg.Info (signature)
+import           Steg.Format.StegFormat (Steg(..)
+                                        , StegBox(..)
+                                        , signature)
 
+{- | The data type of PGM image files, with instance declarations 
+     for Show and Steg.
+. -}
 data PGMmap = PGMmap {
       pgmWidth :: Int
     , pgmHeight :: Int
@@ -22,29 +39,34 @@ instance Steg PGMmap where
     setData g d = g { pgmData = d }
     getHeader   = pgmHeader
 
+{- | Retrieve the header of a PGM. -}
 pgmHeader :: PGMmap -> L.ByteString 
-pgmHeader (PGMmap w h m d) = L.concat $ intersperse nl [magicNumber
+pgmHeader (PGMmap w h m _) = L.concat $ intersperse nl [magicNumber
                              , signature
                              , L8.pack $ show w ++ " " ++ show h
                              , L8.pack $ show m] 
 
+{- | The magic number that identifies a PGM. -}
+magicNumber :: L8.ByteString
 magicNumber = L8.pack "P5"
 
+nl :: L8.ByteString
 nl = L8.cons '\n' L8.empty
 
+{- | Parse a PGM from a ByteString. -}
 parsePGM :: L.ByteString -> Maybe (StegBox, L.ByteString)
 parsePGM s =
-    matchHeader magicNumber s         >>=
-    \s -> skipSpace ((), s)           >>=
-    \(_, s) -> skipComment ((), s)    >>=
-    (getNat . snd)                    >>=
-    skipSpace                         >>=
-    \(width, s) ->   getNat s         >>=
-    skipSpace                         >>=
-    \(height, s) ->  getNat s         >>=
-    \(maxGrey, s) -> getBytes 1 s     >>=
-    (getBytes (width * height) . snd) >>=
-    \(bitmap, s) -> Just (StegBox (PGMmap width height maxGrey bitmap), s)
+    matchHeader magicNumber s        >>=
+    \s' -> skipSpace ((), s')        >>=
+    \(_, s') -> skipComment ((), s') >>=
+    (getNat . snd)                   >>=
+    skipSpace                        >>=
+    \(width, s') ->   getNat s'      >>=
+    skipSpace                        >>=
+    \(height, s') ->  getNat s'      >>=
+    \(maxGrey, s') -> getBytes 1 s'  >>=
+    (getBytes (width * height) . snd)  >>=
+    \(bitmap, s') -> Just (StegBox (PGMmap width height maxGrey bitmap), s')
 
 matchHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 matchHeader prefix str
