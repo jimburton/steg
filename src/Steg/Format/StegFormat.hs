@@ -1,15 +1,14 @@
 {-# LANGUAGE ExistentialQuantification #-}
-{- |
-Module      :  StegFormat.hs
-Description :  Type class and data types for steg.
-Copyright   :  (c) Jim Burton
-License     :  MIT
-
-Maintainer  :  j.burton@brighton.ac.uk
-Stability   :  provisional 
-Portability :  portable 
-
--}
+-- |
+-- | Module      :  StegFormat.hs
+-- | Description :  Type class and data types for steg.
+-- | Copyright   :  (c) Jim Burton
+-- | License     :  MIT
+-- |
+-- | Maintainer  :  j.burton@brighton.ac.uk
+-- | Stability   :  provisional 
+-- | Portability :  portable 
+-- |
 module Steg.Format.StegFormat 
     (Steg(..)
     , StegBox(..)

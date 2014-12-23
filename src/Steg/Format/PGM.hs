@@ -32,7 +32,7 @@ data PGMmap = PGMmap {
 instance Steg PGMmap where
     getData     = pgmData
     setData g d = g { pgmData = d }
-    getHeader g = pgmHeader g
+    getHeader   = pgmHeader
     sGetContents g = B.concat [getHeader g, getData g]
 
 nl :: B.ByteString
@@ -44,16 +44,16 @@ magicPGM = L8.toStrict $ L8.pack "P5"
 -- | Parse a PGM from a ByteString. 
 parsePGM :: B.ByteString -> Maybe StegBox
 parsePGM s =
-    matchHeader magicPGM s  >>=
+    matchHeader magicPGM s           >>=
     \s1 -> skipSpace ((), s1)        >>=
     \(_, s2) -> skipComment ((), s2) >>=
     (getNat . snd)                   >>=
     skipSpace                        >>=
-    \(w, s3) ->   getNat s3      >>=
+    \(w, s3) ->   getNat s3          >>=
     skipSpace                        >>=
-    \(h, s4) ->  getNat s4      >>=
-    \(m, s5) -> getBytes 1 s5  >>=
-    (getBytes (w * h) . snd)  >>=
+    \(h, s4) ->  getNat s4           >>=
+    \(m, s5) -> getBytes 1 s5        >>=
+    (getBytes (w * h) . snd)         >>=
     \(bitmap, _) -> let header = B.concat $ init $ intersperse nl 
                                  [magicPGM
                                  , signature

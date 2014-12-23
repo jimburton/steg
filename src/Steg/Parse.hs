@@ -28,35 +28,6 @@ import           Steg.Format.StegFormat (Steg(..)
                                         , Format(..)
                                         , magicNumbers)
 
--- | Set the LSB in an 8-bit Word.
-setLSB :: Bool -> Word8 -> Word8
-setLSB b w = if b then setBit w 0 else clearBit w 0
-
--- | Transform an 8-bit Word into a list of Bools.
-wordToBits :: Integral a => a -> [a]
-wordToBits = pad . reverse . decToBin 
-    where pad xs     = replicate (8 - length xs) 0 ++ xs
-          decToBin 0 = []
-          decToBin y = let (a,b) = quotRem y 2 in b : decToBin a
-
--- | Transform a ByteString into a list of Words.
-bsToBits :: B.ByteString -> [Word8]
-bsToBits = bsToBits' []
-    where bsToBits' xs bs =  
-            let h = B.uncons bs in
-            case h of
-              Nothing -> xs
-              Just (w, bs') -> bsToBits' (wordToBits w ++ xs) bs'
-
--- | Modify the LSB in each byte of the first argument.
-modifyLSBs :: B.ByteString -> [Word8] -> B.ByteString
-modifyLSBs bs []     = bs
-modifyLSBs bs (w:ws) = 
-    let mw = B.uncons bs in
-    case mw of
-      Nothing -> B.empty
-      (Just (w', bs')) -> B.cons (setLSB (w==1) w') (modifyLSBs bs' ws) 
-
 -- | Parse a ByteString 
 bsToSteg :: B.ByteString -> Maybe StegBox
 bsToSteg bs = 
@@ -96,8 +67,7 @@ bury' inPath outPath bs =
 
 -- | Write some data out to a file.
 output :: FilePath -> StegBox -> IO ()
-output path (StegBox s) = 
-  B.writeFile path $ sGetContents s
+output path (StegBox s) = B.writeFile path $ sGetContents s
 
 -- | Read in a file and try to construct a message from the contents of the LSBs.
 dig :: FilePath -> IO (Maybe String)
@@ -118,23 +88,39 @@ boolsToStr bs = if length bs < 8
                 then ""
                 else show (chr $ binToDec (take 8 bs)) ++ boolsToStr (drop 8 bs)
 
--- | Collect the LSBs from the bytes in a ByteString.
 getLSBs :: B.ByteString -> [Bool]
-getLSBs bs = let mw = B.uncons bs in
-             case mw of
-               Nothing -> []
-               (Just (w', bs')) -> 
-                   let eb = getLSB (B.pack [w']) in
-                   case eb of
-                       (Left s) -> error s
-                       (Right b) -> b : getLSBs bs'
+getLSBs = B.foldr (\x acc -> either error (:acc) (getLSB (B.pack [x]))) []
 
--- | Convert binary to decimal.
-binToDec :: [Bool] -> Int
-binToDec l = sum $ map (2^) $ elemIndices True $ reverse l
-  
 -- | Get the LSB from a ByteString, which should contain a single word.
 getLSB :: B.ByteString -> Either String Bool
 getLSB bs = BG.runBitGet bs $ do
     BG.skip 7
     BG.getBit 
+
+-- | Set the LSB in an 8-bit Word.
+setLSB :: Bool -> Word8 -> Word8
+setLSB b w = if b then setBit w 0 else clearBit w 0
+
+-- | Transform an 8-bit Word into a list of Bools.
+wordToBits :: Integral a => a -> [a]
+wordToBits = pad . reverse . decToBin 
+    where pad xs     = replicate (8 - length xs) 0 ++ xs
+          decToBin 0 = []
+          decToBin y = let (a,b) = quotRem y 2 in b : decToBin a
+
+-- | Transform a ByteString into a list of Words.
+bsToBits :: B.ByteString -> [Word8]
+bsToBits = B.foldr ((++) . wordToBits) []
+
+-- | Modify the LSB in each byte of the first argument.
+modifyLSBs :: B.ByteString -> [Word8] -> B.ByteString
+modifyLSBs bs []     = bs
+modifyLSBs bs (w:ws) = 
+    let mw = B.uncons bs in
+    case mw of
+      Nothing -> B.empty
+      (Just (w', bs')) -> B.cons (setLSB (w==1) w') (modifyLSBs bs' ws) 
+
+-- | Convert binary to decimal.
+binToDec :: [Bool] -> Int
+binToDec = sum . map (2^) . elemIndices True . reverse 

@@ -26,23 +26,30 @@ dispatch =  [ ("bury", buryAct)
 
 -- | Bury some text. 
 buryAct :: [String] -> IO ()
-buryAct args = do
-  let (imgPath:txtPath:outPath:_) = args
-  bury imgPath txtPath outPath
+buryAct (inP:msgP:outP:_) = bury inP msgP outP
   
 -- | Dig some text. 
 digAct :: [String] -> IO ()
-digAct (imgPath:_) = dig imgPath >>= putStrLn . fromJust
+digAct (inP:_) = dig inP >>= putStrLn . fromJust
+
+usage :: String
+usage = "steg v.0.1 \n\
+\-------------       \n\
+\usage: steg bury imageIn txtFile imageOut \n\
+\       steg dig image"
+
+usageAndExit :: IO ()
+usageAndExit = putStrLn usage >> exitWith (ExitFailure 1)
 
 -- | The entry point for the program. 
 main :: IO ()
 main = do
   args <- getArgs
   if null args 
-  then exitWith (ExitFailure 1)
-  else do let cmd = head args
+  then usageAndExit
+  else do let cmd  = head args
               mAct = lookup cmd dispatch  
           case mAct of
             (Just action) -> action (tail args)
-            Nothing -> putStrLn "Unknown argument"
+            Nothing       -> usageAndExit
   
