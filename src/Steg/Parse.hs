@@ -78,7 +78,7 @@ dig binPath = do
     Just (StegBox g) -> do
        let lsbs   = getLSBs $ getData g
            bitLen = 8 * binToDec (take 8 lsbs)
-           result = reverse $ filter (\c -> c/='\'' && c/='\n') $ 
+           result = filter (\c -> c/='\'' && c/='\n') $ 
                        boolsToStr (take bitLen (drop 8 lsbs))
        return $ Just result
 
