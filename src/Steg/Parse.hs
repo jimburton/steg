@@ -1,14 +1,13 @@
-{- |
-Module      :  Parse.hs
-Description :  Parsing and modifying binary files
-Copyright   :  (c) Jim Burton
-License     :  MIT
-
-Maintainer  :  j.burton@brighton.ac.uk
-Stability   :  provisional 
-Portability :  portable 
-
--}
+-- | 
+-- | Module      :  Parse.hs
+-- | Description :  Parsing and modifying binary files
+-- | Copyright   :  (c) Jim Burton
+-- | License     :  MIT
+-- | 
+-- | Maintainer  :  j.burton@brighton.ac.uk
+-- | Stability   :  provisional 
+-- | Portability :  portable 
+-- | 
 module Steg.Parse
     (dig, bury, bury')
     where
@@ -35,7 +34,7 @@ bsToSteg bs =
       Just PGM -> parsePGM bs
       Just BMP -> parseBMP bs
       Nothing  -> Nothing
-               
+
 -- | Identify the format of some data from its magic number.
 idHeader :: B.ByteString -> Maybe Format
 idHeader bs = let mn = L8.unpack $ L8.fromChunks [B.take 2 bs] in
@@ -116,9 +115,8 @@ bsToBits = B.foldr ((++) . wordToBits) []
 modifyLSBs :: B.ByteString -> [Word8] -> B.ByteString
 modifyLSBs bs []     = bs
 modifyLSBs bs (w:ws) = 
-    let mw = B.uncons bs in
-    case mw of
-      Nothing -> B.empty
+    case B.uncons bs of
+      Nothing          -> B.empty
       (Just (w', bs')) -> B.cons (setLSB (w==1) w') (modifyLSBs bs' ws) 
 
 -- | Convert binary to decimal.

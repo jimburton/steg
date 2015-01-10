@@ -1,14 +1,13 @@
-{- |
-Module      :  Main.hs
-Description :  Entry point for the steg program
-Copyright   :  (c) Jim Burton
-License     :  MIT
-
-Maintainer  :  j.burton@brighton.ac.uk
-Stability   :  provisional 
-Portability :  portable 
-
--}
+-- | 
+-- | Module      :  Main.hs
+-- | Description :  Entry point for the steg program
+-- | Copyright   :  (c) Jim Burton
+-- | License     :  MIT
+-- | 
+-- | Maintainer  :  j.burton@brighton.ac.uk
+-- | Stability   :  provisional 
+-- | Portability :  portable 
+-- | 
 module Main
     where
 
@@ -27,14 +26,16 @@ dispatch =  [ ("bury", buryAct)
 -- | Bury some text. 
 buryAct :: [String] -> IO ()
 buryAct (inP:msgP:outP:_) = bury inP msgP outP
+buryAct _                 = usageAndExit
   
 -- | Dig some text. 
 digAct :: [String] -> IO ()
 digAct (inP:_) = dig inP >>= putStrLn . fromJust
+digAct _       = usageAndExit
 
 usage :: String
 usage = "steg v.0.1 \n\
-\-------------       \n\
+\-------------      \n\
 \usage: steg bury imageIn txtFile imageOut \n\
 \       steg dig image"
 
@@ -45,11 +46,8 @@ usageAndExit = putStrLn usage >> exitWith (ExitFailure 1)
 main :: IO ()
 main = do
   args <- getArgs
-  if null args 
+  if null args
   then usageAndExit
-  else do let cmd  = head args
-              mAct = lookup cmd dispatch  
-          case mAct of
-            (Just action) -> action (tail args)
-            Nothing       -> usageAndExit
-  
+  else case lookup (head args) dispatch of
+         (Just action) -> action (tail args)
+         Nothing       -> usageAndExit

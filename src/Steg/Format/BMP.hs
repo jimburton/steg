@@ -1,14 +1,13 @@
-{- |
-Module      :  BMP.hs
-Description :  Parsing Windows Bitmap (BMP) files
-Copyright   :  (c) Jim Burton
-License     :  MIT
-
-Maintainer  :  j.burton@brighton.ac.uk
-Stability   :  provisional 
-Portability :  portable 
-
--}
+-- |
+-- | Module      :  BMP.hs
+-- | Description :  Parsing Windows Bitmap (BMP) files
+-- | Copyright   :  (c) Jim Burton
+-- | License     :  MIT
+-- | 
+-- | Maintainer  :  j.burton@brighton.ac.uk
+-- | Stability   :  provisional 
+-- | Portability :  portable 
+-- | 
 module Steg.Format.BMP
     where
 
@@ -36,7 +35,7 @@ instance Steg BMPmap where
 -- | Parse a BMP from a ByteString. 
 parseBMP :: B.ByteString -> Maybe StegBox
 parseBMP bs = case BMP.parseBMP (L8.fromChunks [bs]) of
-                Left _ -> Nothing
+                Left _    -> Nothing
                 Right pic -> do
                   let body   = BMP.bmpRawImageData pic
                       size   = BMP.fileHeaderFileSize $ BMP.bmpFileHeader pic

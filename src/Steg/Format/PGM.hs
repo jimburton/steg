@@ -67,8 +67,8 @@ matchHeader prefix str = let prefixL = L8.fromChunks [prefix]
                              strL    = L8.fromChunks [str] in
                          if prefixL `L8.isPrefixOf` strL then
                              Just (L8.toStrict $ 
-                                     L8.dropWhile isSpace 
-                                           (L8.drop (L8.length prefixL) strL))
+                                     L8.dropWhile isSpace $ 
+                                       L8.drop (L8.length prefixL) strL)
                          else Nothing
 
 getNat :: B.ByteString -> Maybe (Int, B.ByteString)
