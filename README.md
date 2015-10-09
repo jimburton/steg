@@ -9,6 +9,7 @@ Using the tool
 ==============
 
 ````
+steg$ cabal sandbox init
 steg$ cabal install
 steg$ cat message.txt
 Hi, how are you?
