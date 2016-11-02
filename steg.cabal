@@ -19,7 +19,7 @@ executable steg
   main-is:             Main.hs
   other-modules:       Steg.Parse 
   Ghc-Options:         -Wall
-  build-depends:       base <4.8
+  build-depends:       base 
                      , binary-strict >=0.4 && <0.5
                      , bmp >= 1.2.5.2
                      , bytestring >=0.10 && <0.11
