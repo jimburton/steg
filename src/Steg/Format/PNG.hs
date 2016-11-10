@@ -8,6 +8,7 @@
 -- | Stability   :  provisional
 -- | Portability :  portable
 -- |
+
 module Steg.Format.PNG
     where
 
@@ -23,8 +24,8 @@ data PNGmap = PNGmap {
 
 instance Steg PNGmap where
     getData      = pngData
-    setData b d  = undefined
+    setData p d  = let innerPNG = thePNG b in
+                  p {pngData = d 
+                    , thePNG = innerPNG { BMP.bmpRawImageData = d } }
     getHeader    = pngHeader
     sGetContents = undefined
-
-
