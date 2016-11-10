@@ -20,7 +20,6 @@ executable steg
   other-modules:       Steg.Parse 
   Ghc-Options:         -Wall
   build-depends:       base
-                     , JuicyPixels
                      , binary-strict >=0.4 && <0.5
                      , bmp >= 1.2.5.2
                      , bytestring >=0.10 && <0.11
