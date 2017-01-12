@@ -107,17 +107,19 @@ data PNGmap = PNGmap PNGmap18,19
       , thePNG thePNG21,22
 instance instance24,25
 
-./test/TestSteg.hs,284
-module TestStegTestSteg0,1
-import import7,8
-prop_codecRAWPGM prop_codecRAWPGM10,11
-prop_codecRAWPGM prop_codecRAWPGM11,12
-prop_codecBMP prop_codecBMP18,19
-prop_codecBMP prop_codecBMP19,20
-runTests runTests26,27
-runTests runTests27,28
-main main30,31
-main main31,32
-
 ./Setup.hs,15
 main main1,2
+
+./test-steg/TestSteg.hs,340
+module MainMain0,1
+import import12,13
+samplesPath samplesPath16,17
+samplesPath samplesPath17,18
+prop_codecRAWPGM prop_codecRAWPGM19,20
+prop_codecRAWPGM prop_codecRAWPGM20,21
+prop_codecBMP prop_codecBMP35,36
+prop_codecBMP prop_codecBMP36,37
+runTests runTests46,47
+runTests runTests47,48
+main main50,51
+main main51,52
