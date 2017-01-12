@@ -20,11 +20,11 @@ Using the tool
 ````
 steg$ cabal sandbox init
 steg$ cabal install
-steg$ cat message.txt
-Hi, how are you?
-steg$ steg bury image.pgm message.txt image2.pgm
+steg$ cat etc/samples/soseki.txt
+Sosuke had been relaxing for some time on the veranda...
+steg$ steg bury image.pgm etc/samples/soseki.txt image2.pgm
 steg$ steg dig image2.pgm
-Hi, how are you?
+Sosuke had been relaxing for some time on the veranda...
 ````
 How it works
 ============
