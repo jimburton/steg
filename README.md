@@ -42,19 +42,49 @@ body contains the actual picture. Modify the data to overwrite the
 the binary-encoded message. Say we want to store the message "a",
 `01100001` in binary, and our image file uses a simple greyscale
 format in which each byte in the data represents a single pixel. The
-first eight bytes of the data might look as follows: ```` 00010101
-10010001 01011111 10111100 10010001 00010101 11011100 10010001 ```` We
-need to change the last bit of every byte to the corresponding bit
-from the message, `01100001`: ```` 00010101 ---> 00010100 (flip)
-10010001 ---> 10010001 (no change) 01011111 ---> 01011111 (no change)
-10111100 ---> 10111100 (no change) 10010001 ---> 10010000 (flip)
-00010101 ---> 00010100 (flip) 11011100 ---> 11011100 (no change)
-10010000 ---> 10010001 (flip) ```` Because this results in the change
-of a pixel's greyscale value from, say, 53 to 52, there is no
-human-visible effect. To extract the message, we collect the LSBs of
-modified data: ```` 0001010[0] 1001000[1] 0101111[1] 1011110[0]
-1001000[0] 0001010[0] 1101110[0] 1001000[1] ```` Giving us back the
-message `01100001`.
+first eight bytes of the data might look as follows: 
+
+````
+00010101
+10010001 
+01011111 
+10111100 
+10010001 
+00010101 
+11011100 
+10010001 
+```` 
+
+We need to change the last bit of every byte to the corresponding bit
+from the message, `01100001`: 
+
+```` 
+00010101 ---> 00010100 (flip)
+10010001 ---> 10010001 (no change) 
+01011111 ---> 01011111 (no change)
+10111100 ---> 10111100 (no change) 
+10010001 ---> 10010000 (flip)
+00010101 ---> 00010100 (flip) 
+11011100 ---> 11011100 (no change)
+10010000 ---> 10010001 (flip) 
+```` 
+
+Because this results in the change of a pixel's greyscale value from,
+say, 53 to 52, there is no human-visible effect. To extract the
+message, we collect the LSBs of modified data: 
+
+```` 
+0001010[0]
+1001000[1] 
+0101111[1] 
+1011110[0] 
+1001000[0] 
+0001010[0] 
+1101110[0]
+1001000[1] 
+```` 
+
+Giving us back the message `01100001`.
 
 Note that this would work just as well for RGB formats that represent
 each pixel by three bytes, but we would be changing fewer pixels. To
@@ -64,7 +94,8 @@ we are happy with 255 as the length of the longest message we can
 hide, the number can be stored in one byte, hidden in the LSBs of the
 first 8 bytes.
 
-Ways to improve the program ---------------------------
+Ways to improve the program 
+---------------------------
 
 * Add support for more image formats. There are several codecs
   [available on hackage](https://hackage.haskell.org/packages/#cat:Codec),
