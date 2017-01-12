@@ -26,6 +26,9 @@ steg$ steg bury image.pgm etc/samples/soseki.txt image2.pgm
 steg$ steg dig image2.pgm
 Sosuke had been relaxing for some time on the veranda...
 ````
+
+Note that there are sample image files in the directory `etc/samples`. 
+
 How it works
 ============
 
