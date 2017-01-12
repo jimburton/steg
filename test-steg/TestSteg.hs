@@ -3,18 +3,17 @@ module Main
 
 import           System.FilePath ((</>))
 import           System.Directory (removeFile)
-import           System.IO (hClose)
-import           System.IO.Temp (withTempFile, openTempFile)
 import           Control.Applicative ((<$>))
 
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Maybe (fromJust)
-import           Steg.Parse (dig, bury', buryWithHandle)
-import           Test.QuickCheck (Property, quickCheck)
+import           Steg.Parse (dig, bury')
+import           Test.QuickCheck (Property)
 import           Test.QuickCheck.Arbitrary
 import           Test.QuickCheck.Gen
 import           Test.QuickCheck.Monadic (assert, monadicIO, run)
---import           Distribution.TestSuite.QuickCheck
+import           Test.Framework
+import           Test.Framework.Providers.QuickCheck2
 
 samplesPath :: FilePath
 samplesPath = "etc/samples"
@@ -46,15 +45,9 @@ prop_codecAny msg inPath tmp = monadicIO test
                     run $ removeFile tmp
                     assert $ msg == fromJust readMsg
 
-runTests :: IO ()
-runTests = do quickCheck prop_codecRAWPGM
-              quickCheck prop_codecBMP
-
 main :: IO ()
-main = runTests
+main = defaultMain tests
 
-{-tests :: IO [Test]
-tests = return $
-        [ test "prop_codecRAWPGM" prop_codecRAWPGM
-        , test "prop_codecBMP" prop_codecBMP ]
--}
+tests :: [Test]
+tests = [ testProperty "prop_codecRAWPGM" prop_codecRAWPGM
+        , testProperty "prop_codecBMP" prop_codecBMP ]

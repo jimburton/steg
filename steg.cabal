@@ -38,13 +38,13 @@ Test-Suite test-steg
                      , binary-strict
                      , bytestring
                      , word8
-                     , QuickCheck
+                     , QuickCheck >= 2
                      , temporary
                      , filepath
                      , transformers
                      , directory
-                     --, system-filepath
                      , test-framework
+                     , test-framework-quickcheck2
                      
   default-language:    Haskell2010
 
