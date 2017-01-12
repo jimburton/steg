@@ -2,47 +2,49 @@ module Main
     where
 
 import           System.FilePath ((</>))
---import           Filesystem.Path (parent)
-import           System.IO.Temp (withTempFile)
-import           Control.Monad.IO.Class (liftIO)
+import           System.Directory (removeFile)
+import           System.IO (hClose)
+import           System.IO.Temp (withTempFile, openTempFile)
+import           Control.Applicative ((<$>))
 
 import qualified Data.ByteString.Lazy.Char8 as L8
-import           Data.Char (isAsciiLower)
 import           Data.Maybe (fromJust)
-import           Steg.Parse (dig, bury')
-import           Test.QuickCheck (Property, quickCheck, (==>))
+import           Steg.Parse (dig, bury', buryWithHandle)
+import           Test.QuickCheck (Property, quickCheck)
+import           Test.QuickCheck.Arbitrary
+import           Test.QuickCheck.Gen
 import           Test.QuickCheck.Monadic (assert, monadicIO, run)
 --import           Distribution.TestSuite.QuickCheck
 
 samplesPath :: FilePath
-samplesPath = "/home/jb259/haskell/src/steg/etc/samples"
+samplesPath = "etc/samples"
 
-prop_codecRAWPGM :: String -> Property
-prop_codecRAWPGM msg = not (null msg) && all isAsciiLower msg ==> monadicIO test
-    where test = do let inPath  = samplesPath </> "pgm/RAW/surf.pgm"
-                        outPath = "./surf2.pgm"
-                    --s <- parent "."
-                    --putStrLn s
-                    run $ bury' inPath outPath (L8.toStrict $ L8.pack (msg++"\n"))
-                    readMsg <- run $ dig outPath
-                    liftIO $ putStrLn ("msg:" ++ msg)
-                    liftIO $ putStrLn ("read:" ++ (fromJust readMsg))
+genSafeChar :: Gen Char
+genSafeChar = elements ['a'..'z']
+
+genSafeString :: Gen String
+genSafeString = listOf1 genSafeChar
+
+newtype SafeString = SafeString { unwrapSafeString :: String }
+    deriving Show
+
+instance Arbitrary SafeString where
+    arbitrary = SafeString <$> genSafeString
+
+prop_codecRAWPGM :: SafeString -> Property
+prop_codecRAWPGM (SafeString msg) = do let inPath  = samplesPath </> "pgm/RAW/surf.pgm"
+                                       prop_codecAny msg inPath "tmp.png" 
+
+prop_codecBMP :: SafeString -> Property
+prop_codecBMP (SafeString msg) = do let inPath  = samplesPath </> "bmp/24bit/duck.bmp"
+                                    prop_codecAny msg inPath "tmp.bmp"
+
+prop_codecAny :: String -> String -> String -> Property
+prop_codecAny msg inPath tmp = monadicIO test
+    where test = do run $ bury' inPath tmp (L8.toStrict $ L8.pack (msg++"\n"))
+                    readMsg <- run $ dig tmp
+                    run $ removeFile tmp
                     assert $ msg == fromJust readMsg
-                    {-withTempFile "." "./surf2.pgm." $ \tmpFile hFile ->
-                      do run $ bury' inPath tmpFile (L8.toStrict $ L8.pack (msg++"\n"))
-                         readMsg <- run $ dig tmpFile
-                         assert $ msg == fromJust readMsg-}
-
-prop_codecBMP :: String -> Property
-prop_codecBMP msg = not (null msg) && all isAsciiLower msg ==> monadicIO test
-    where test = do let inPath   = samplesPath </> "pgm/RAW/surf.pgm"
-                        outPath  = "./duck2.bmp"
-                    run $ bury' inPath outPath (L8.toStrict $ L8.pack (msg++"\n"))
-                    readMsg <- run $ dig outPath
-                    liftIO $ putStrLn ("msg:" ++ msg)
-                    liftIO $ putStrLn ("read:" ++ (fromJust readMsg))
-                    assert $ msg == fromJust readMsg
-
 
 runTests :: IO ()
 runTests = do quickCheck prop_codecRAWPGM

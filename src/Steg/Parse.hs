@@ -9,7 +9,7 @@
 -- | Portability :  portable 
 -- | 
 module Steg.Parse
-    (dig, bury, bury')
+    (dig, bury, bury', buryWithHandle)
     where
 
 import           Control.Applicative ((<$>))
@@ -17,6 +17,7 @@ import qualified Data.Binary.Strict.BitGet as BG
 import           Data.Bits (setBit, clearBit)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Char8 as L8
+import           System.IO
 import           Data.Char (chr)
 import           Data.List (elemIndices)
 import           Data.Word8 (Word8)
@@ -64,9 +65,35 @@ bury' inPath outPath bs =
                   g'       = setData g (modifyLSBs (getData g) bits)
               output outPath $ StegBox g'
 
+-- | A function like bury but which takes the message as a ByteString.
+-- | Included to make testing easier.
+buryWithHandle :: FilePath -> FilePath -> B.ByteString -> IO (Maybe Handle)
+buryWithHandle inPath outPath bs = 
+    if B.length bs > 255
+    then error "Can only store 255 characters"
+    else do
+      mg <- bsToSteg <$> B.readFile inPath
+      case mg of
+        Nothing -> return Nothing
+        Just (StegBox g) -> 
+            do
+              let bs'      = L8.toStrict $ L8.filter (/='\n') (L8.fromChunks [bs])
+                  lenWord  = fromIntegral (B.length bs') :: Word8
+                  lenWBits = bsToBits (B.cons lenWord B.empty)
+                  bits     = lenWBits ++ bsToBits bs' 
+                  g'       = setData g (modifyLSBs (getData g) bits)
+              outputWithHandle outPath $ StegBox g'
+
 -- | Write some data out to a file.
 output :: FilePath -> StegBox -> IO ()
 output path (StegBox s) = B.writeFile path $ sGetContents s
+
+-- | Write some data out to a file.
+outputWithHandle :: FilePath -> StegBox -> IO (Maybe Handle)
+outputWithHandle path (StegBox s) = do let bs = sGetContents s
+                                       h <- openFile path WriteMode 
+                                       B.hPut h bs
+                                       return (Just h)
 
 -- | Read in a file and try to construct a message from the contents of the LSBs.
 dig :: FilePath -> IO (Maybe String)

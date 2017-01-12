@@ -42,6 +42,7 @@ Test-Suite test-steg
                      , temporary
                      , filepath
                      , transformers
+                     , directory
                      --, system-filepath
                      , test-framework
                      
