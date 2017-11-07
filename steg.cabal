@@ -19,11 +19,11 @@ executable steg
   main-is:             Main.hs
   other-modules:       Steg.Parse 
   Ghc-Options:         -Wall
-  build-depends:       base <4.8
-                     , binary-strict >=0.4 && <0.5
-                     , bmp >= 1.2.5.2
-                     , bytestring >=0.10 && <0.11
-                     , word8 >=0.1 && <0.2
+  build-depends:       base 
+                     , binary-strict
+                     , bmp
+                     , bytestring 
+                     , word8 
                      , QuickCheck
   hs-source-dirs:      src
   default-language:    Haskell2010
@@ -34,10 +34,10 @@ Test-Suite steg-testsuite
   hs-source-dirs:      test, src
   Ghc-Options:         -Wall
   Build-depends:       base
-                     , bmp >= 1.2.5.2
-                     , binary-strict >=0.4 && <0.5
-                     , bytestring >=0.10 && <0.11
-                     , word8 >=0.1 && <0.2
+                     , bmp 
+                     , binary-strict 
+                     , bytestring 
+                     , word8 
                      , QuickCheck
 
 source-repository head
