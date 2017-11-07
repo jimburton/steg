@@ -25,11 +25,11 @@ data BMPmap = BMPmap {
     }
 
 instance Steg BMPmap where
-    getData     = bmpData
-    setData b d = let innerBMP = theBMP b in
-                  b { bmpData = d 
-                    , theBMP = innerBMP { BMP.bmpRawImageData = d } }
-    getHeader   = bmpHeader
+    getData      = bmpData
+    setData b d  = let innerBMP = theBMP b in
+                     b { bmpData = d 
+                       , theBMP = innerBMP { BMP.bmpRawImageData = d } }
+    getHeader    = bmpHeader
     sGetContents = L8.toStrict . BMP.renderBMP . theBMP
 
 -- | Parse a BMP from a ByteString. 
