@@ -18,7 +18,10 @@ cabal-version:       >=1.10
 executable steg
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Steg.Parse 
+  other-modules:       Steg.Parse
+                     , Steg.Format.BMP
+                     , Steg.Format.StegFormat
+                     , Steg.Format.PGM
   Ghc-Options:         -Wall
   build-depends:       base 
                      , binary-strict
