@@ -18,12 +18,13 @@ Using the tool
 ==============
 
 ````
-steg$ cabal sandbox init
+steg$ cabal update
+steg$ cabal configure --enable-tests
 steg$ cabal install
 steg$ cat etc/samples/soseki.txt
 Sosuke had been relaxing for some time on the veranda...
-steg$ steg bury image.pgm etc/samples/soseki.txt image2.pgm
-steg$ steg dig image2.pgm
+steg$ cabal run steg -- bury ~/tmp/image.pgm etc/samples/soseki.txt image2.pgm
+steg$ cabal run steg -- dig ~/tmp/image2.pgm
 Sosuke had been relaxing for some time on the veranda...
 ````
 
