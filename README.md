@@ -18,15 +18,23 @@ Using the tool
 ==============
 
 ````
-steg$ cabal update
-steg$ cabal configure --enable-tests
-steg$ cabal install
-steg$ cat etc/samples/soseki.txt
+$ cabal update
+$ cabal configure --enable-tests
+$ cabal install
+$ cat etc/samples/soseki.txt
 Sosuke had been relaxing for some time on the veranda...
-steg$ cabal run steg -- bury ~/tmp/image.pgm etc/samples/soseki.txt image2.pgm
-steg$ cabal run steg -- dig ~/tmp/image2.pgm
+$ cabal run steg -- bury ~/tmp/image.bmp etc/samples/soseki.txt etc/samples/bmp/24bit/duck.bmp
+$ cabal run steg -- dig ~/tmp/image.bmp
 Sosuke had been relaxing for some time on the veranda...
 ````
+
+You shouldn't be able to see any difference if you inspect the two images 
+yourself. However, if you have `imagemagick` installed you can generate an
+image that highlights the differences in each correposnding pair of pixels:
+
+```
+$ compare etc/samples/24bit/duck.bmp ~/tmp/image.bmp ~/tmp/difference.bmp
+```
 
 Note that there are sample image files in the directory `etc/samples`. 
 

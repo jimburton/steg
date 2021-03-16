@@ -22,10 +22,11 @@ import           Data.List (elemIndices)
 import           Data.Word8 (Word8)
 import           Steg.Format.BMP
 import           Steg.Format.PGM
-import           Steg.Format.StegFormat (Steg(..)
-                                        , StegBox(..)
-                                        , Format(..)
-                                        , magicNumbers)
+import           Steg.Format.StegFormat
+  (Steg(..)
+  , StegBox(..)
+  , Format(..)
+  , magicNumbers)
 
 -- | Parse a ByteString 
 bsToSteg :: B.ByteString -> Maybe StegBox
@@ -48,21 +49,20 @@ bury inPath txtPath outPath = B.readFile txtPath >>= bury' inPath outPath
 -- | A function like bury but which takes the message as a ByteString.
 -- | Included to make testing easier.
 bury' :: FilePath -> FilePath -> B.ByteString ->IO ()
-bury' inPath outPath bs = 
-    if B.length bs > 255
-    then error "Can only store 255 characters"
-    else do
-      mg <- bsToSteg <$> B.readFile inPath
-      case mg of
-        Nothing -> return ()
-        Just (StegBox g) -> 
-            do
-              let bs'      = L8.toStrict $ L8.filter (/='\n') (L8.fromChunks [bs])
-                  lenWord  = fromIntegral (B.length bs') :: Word8
-                  lenWBits = bsToBits (B.cons lenWord B.empty)
-                  bits     = lenWBits ++ bsToBits bs' 
-                  g'       = setData g (modifyLSBs (getData g) bits)
-              output outPath $ StegBox g'
+bury' inPath outPath bs = do
+  mg <- bsToSteg <$> B.readFile inPath
+  case mg of
+    Nothing -> do
+      putStrLn "bsToSteg: no output"
+      return ()
+    Just (StegBox g) -> 
+      do
+        let bs'      = L8.toStrict $ L8.filter (/='\n') (L8.fromChunks [bs])
+            lenWord  = fromIntegral (B.length bs') :: Word8
+            lenWBits = bsToBits (B.cons lenWord B.empty)
+            bits     = lenWBits ++ bsToBits bs' 
+            g'       = setData g (modifyLSBs (getData g) bits)
+        output outPath $ StegBox g'
 
 -- | Write some data out to a file.
 output :: FilePath -> StegBox -> IO ()
