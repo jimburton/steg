@@ -12,7 +12,6 @@ module Steg.Parse
     (dig, bury, bury')
     where
 
-import           Control.Applicative ((<$>))
 import qualified Data.Binary.Strict.BitGet as BG
 import           Data.Bits (setBit, clearBit)
 import qualified Data.ByteString as B
