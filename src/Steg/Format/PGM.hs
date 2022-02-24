@@ -25,8 +25,8 @@ import           Steg.Format.StegFormat (Steg(..)
 -- |     for Show and Steg.
 
 data PGMmap = PGMmap {
-      pgmHeader :: B.ByteString
-    , pgmData   :: B.ByteString
+      pgmHeader :: B.ByteString -- ^ The header.
+    , pgmData   :: B.ByteString -- ^ The data.
     } 
 
 instance Steg PGMmap where
@@ -35,9 +35,11 @@ instance Steg PGMmap where
     getHeader   = pgmHeader
     sGetContents g = B.concat [getHeader g, getData g]
 
+-- | Bytestring containing a newline.
 nl :: B.ByteString
 nl = L8.toStrict $ L8.cons '\n' L8.empty
 
+-- | Magic number for the file PGM format.
 magicPGM :: B.ByteString
 magicPGM = L8.toStrict $ L8.pack "P5"
 
@@ -62,6 +64,7 @@ parsePGM s =
                                  , B.empty] in
                     Just $ StegBox (PGMmap header bitmap)
 
+-- | Parse the header of a PGM file.
 matchHeader :: B.ByteString -> B.ByteString -> Maybe B.ByteString
 matchHeader prefix str = let prefixL = L8.fromChunks [prefix]
                              strL    = L8.fromChunks [str] in
@@ -71,6 +74,7 @@ matchHeader prefix str = let prefixL = L8.fromChunks [prefix]
                                        L8.drop (L8.length prefixL) strL)
                          else Nothing
 
+-- | Parse a natural number.
 getNat :: B.ByteString -> Maybe (Int, B.ByteString)
 getNat bs = case L8.readInt (L8.fromChunks [bs]) of
               Nothing -> Nothing
@@ -78,6 +82,7 @@ getNat bs = case L8.readInt (L8.fromChunks [bs]) of
                   | num <= 0    -> Nothing
                   | otherwise   -> Just (fromIntegral num, L8.toStrict rest)
 
+-- | Take @n@ bytes from the head of a ByteString.
 getBytes :: Int -> B.ByteString
          -> Maybe (B.ByteString, B.ByteString)
 getBytes n bs = let count           = fromIntegral n
@@ -86,9 +91,11 @@ getBytes n bs = let count           = fromIntegral n
                    then Nothing
                    else Just both
 
+-- | Drop whitespace from within a PGM.
 skipSpace :: (a, B.ByteString) -> Maybe (a, B.ByteString)
 skipSpace (a, bs) = Just (a, L8.toStrict $ L8.dropWhile isSpace (L8.fromChunks [bs]))
 
+-- | Drop comments from within a PGM.
 skipComment :: (a, B.ByteString) -> Maybe (a, B.ByteString)
 skipComment (a, bs) = let bs'  = L8.fromChunks [bs] 
                           bs'' = if L8.head bs' == '#'

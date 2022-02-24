@@ -38,6 +38,7 @@ class Steg t where
 -- |     image fie is being parsed. 
 data Format = PGM | BMP deriving (Show, Eq, Ord)
 
+-- | Commented "signature" for formats that support it.
 signature :: B.ByteString
 signature = L8.toStrict $ L8.pack "# CREATOR: steg v0.1"
 

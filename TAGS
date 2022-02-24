@@ -1,4 +1,138 @@
 
+./etc/InitialMain.hs,1314
+module MainMain0,1
+data PGM PGM13,14
+data PGM = PGM PGM13,14
+      greyWidth greyWidth14,15
+    , greyHeight greyHeight15,16
+    , greyMax greyMax16,17
+    , greyData greyData17,18
+instance instance20,21
+parsePGM parsePGM27,28
+parsePGM parsePGM28,29
+countWords countWords41,42
+countWords countWords42,43
+signature signature44,45
+magicString magicString45,46
+matchHeader matchHeader47,48
+    | prefix `L8.isPrefixOf`L8.isPrefixOf49,50
+getNat getNat54,55
+getNat getNat55,56
+getBytes getBytes61,62
+getBytes getBytes63,64
+skipSpace skipSpace69,70
+skipSpace skipSpace70,71
+skipComment skipComment72,73
+skipComment skipComment73,74
+setLSB setLSB82,83
+setLSB setLSB83,84
+wordToBits wordToBits86,87
+wordToBits wordToBits87,88
+bsToBits bsToBits93,94
+bsToBits bsToBits94,95
+modifyLSBs modifyLSBs101,102
+modifyLSBs modifyLSBs102,103
+buryText buryText109,110
+buryText buryText110,111
+outputPGM outputPGM117,118
+outputPGM outputPGM118,119
+msgLen msgLen126,127
+msgLen msgLen127,128
+boolsToStr boolsToStr130,131
+boolsToStr boolsToStr131,132
+getLSBs getLSBs135,136
+getLSBs getLSBs136,137
+binToDec binToDec145,146
+binToDec binToDec146,147
+getLSB getLSB148,149
+getLSB getLSB149,150
+digupText digupText156,157
+digupText digupText157,158
+
+./src/Steg/Format/PGM.hs,590
+module Steg.Format.PGMSteg.Format.PGM11,12
+data PGMmap PGMmap26,27
+data PGMmap = PGMmap PGMmap26,27
+      pgmHeader pgmHeader27,28
+    , pgmData pgmData28,29
+instance instance31,32
+nl nl38,39
+nl nl39,40
+magicPGM magicPGM42,43
+magicPGM magicPGM43,44
+parsePGM parsePGM46,47
+parsePGM parsePGM47,48
+matchHeader matchHeader67,68
+matchHeader matchHeader68,69
+getNat getNat77,78
+getNat getNat78,79
+getBytes getBytes85,86
+getBytes getBytes87,88
+skipSpace skipSpace94,95
+skipSpace skipSpace95,96
+skipComment skipComment98,99
+skipComment skipComment99,100
+
+./src/Steg/Format/StegFormat.hs,501
+module Steg.Format.StegFormatSteg.Format.StegFormat11,12
+data StegBox StegBox27,28
+data StegBox = forall forall27,28
+class Steg Steg30,31
+class Steg Steg30,31
+    getData getData31,32
+    setData setData32,33
+    getHeader getHeader33,34
+    sGetContents sGetContents34,35
+data Format Format38,39
+data Format = PGM PGM38,39
+data Format = PGM | BMP BMP38,39
+signature signature41,42
+signature signature42,43
+magicNumbers magicNumbers45,46
+magicNumbers magicNumbers46,47
+
+./src/Steg/Format/BMP.hs,274
+module Steg.Format.BMPSteg.Format.BMP10,11
+data BMPmap BMPmap20,21
+data BMPmap = BMPmap BMPmap20,21
+      bmpHeader bmpHeader21,22
+      , bmpData bmpData22,23
+      , theBMP theBMP23,24
+instance instance26,27
+parseBMP parseBMP35,36
+parseBMP parseBMP36,37
+
+./src/Steg/Parse.hs,704
+module Steg.Parse Steg.Parse10,11
+bsToSteg bsToSteg29,30
+bsToSteg bsToSteg30,31
+idHeader idHeader37,38
+idHeader idHeader38,39
+bury bury44,45
+bury bury45,46
+bury' bury'49,50
+bury' bury'50,51
+output output66,67
+output output67,68
+dig dig70,71
+dig dig71,72
+boolsToStr boolsToStr84,85
+boolsToStr boolsToStr85,86
+getLSBs getLSBs90,91
+getLSBs getLSBs91,92
+getLSB getLSB94,95
+getLSB getLSB95,96
+setLSB setLSB100,101
+setLSB setLSB101,102
+wordToBits wordToBits104,105
+wordToBits wordToBits105,106
+bsToBits bsToBits112,113
+bsToBits bsToBits113,114
+modifyLSBs modifyLSBs116,117
+modifyLSBs modifyLSBs117,118
+binToDec binToDec124,125
+binToDec binToDec125,126
+
 ./src/Main.hs,299
 module MainMain10,11
 dispatch dispatch19,20
@@ -14,112 +148,28 @@ usageAndExit usageAndExit42,43
 main main45,46
 main main46,47
 
-./src/Steg/Parse.hs,702
-module Steg.ParseSteg.Parse10,11
-bsToSteg bsToSteg30,31
-bsToSteg bsToSteg31,32
-idHeader idHeader38,39
-idHeader idHeader39,40
-bury bury44,45
-bury bury45,46
-bury' bury'49,50
-bury' bury'50,51
-output output67,68
-output output68,69
-dig dig71,72
-dig dig72,73
-boolsToStr boolsToStr84,85
-boolsToStr boolsToStr85,86
-getLSBs getLSBs89,90
-getLSBs getLSBs90,91
-getLSB getLSB93,94
-getLSB getLSB94,95
-setLSB setLSB99,100
-setLSB setLSB100,101
-wordToBits wordToBits103,104
-wordToBits wordToBits104,105
-bsToBits bsToBits110,111
-bsToBits bsToBits111,112
-modifyLSBs modifyLSBs114,115
-modifyLSBs modifyLSBs115,116
-binToDec binToDec122,123
-binToDec binToDec123,124
-
-./src/Steg/Format/StegFormat.hs,501
-module Steg.Format.StegFormatSteg.Format.StegFormat11,12
-data StegBox StegBox27,28
-data StegBox = forall forall27,28
-class Steg Steg30,31
-class Steg Steg30,31
-    getData getData31,32
-    setData setData32,33
-    getHeader getHeader33,34
-    sGetContents sGetContents34,35
-data Format Format38,39
-data Format = PGM PGM38,39
-data Format = PGM | BMP BMP38,39
-signature signature40,41
-signature signature41,42
-magicNumbers magicNumbers44,45
-magicNumbers magicNumbers45,46
-
-./src/Steg/Format/PGM.hs,589
-module Steg.Format.PGMSteg.Format.PGM11,12
-data PGMmap PGMmap26,27
-data PGMmap = PGMmap PGMmap26,27
-      pgmHeader pgmHeader27,28
-    , pgmData pgmData28,29
-instance instance31,32
-nl nl37,38
-nl nl38,39
-magicPGM magicPGM40,41
-magicPGM magicPGM41,42
-parsePGM parsePGM44,45
-parsePGM parsePGM45,46
-matchHeader matchHeader64,65
-matchHeader matchHeader65,66
-getNat getNat73,74
-getNat getNat74,75
-getBytes getBytes80,81
-getBytes getBytes82,83
-skipSpace skipSpace88,89
-skipSpace skipSpace89,90
-skipComment skipComment91,92
-skipComment skipComment92,93
-
-./src/Steg/Format/BMP.hs,274
-module Steg.Format.BMPSteg.Format.BMP10,11
-data BMPmap BMPmap20,21
-data BMPmap = BMPmap BMPmap20,21
-      bmpHeader bmpHeader21,22
-      , bmpData bmpData22,23
-      , theBMP theBMP23,24
-instance instance26,27
-parseBMP parseBMP35,36
-parseBMP parseBMP36,37
-
-./src/Steg/Format/PNG.hs,224
-module Steg.Format.PNGSteg.Format.PNG11,12
-data PNGmap PNGmap18,19
-data PNGmap = PNGmap PNGmap18,19
-      pngHeader pngHeader19,20
-      , pngData pngData20,21
-      , thePNG thePNG21,22
-instance instance24,25
-
 ./Setup.hs,15
 main main1,2
 
-./test-steg/TestSteg.hs,340
+./test-steg/TestSteg.hs,696
 module MainMain0,1
-import import12,13
+samplesPath samplesPath15,16
 samplesPath samplesPath16,17
-samplesPath samplesPath17,18
-prop_codecRAWPGM prop_codecRAWPGM19,20
-prop_codecRAWPGM prop_codecRAWPGM20,21
+genSafeChar genSafeChar18,19
+genSafeChar genSafeChar19,20
+genSafeString genSafeString21,22
+genSafeString genSafeString22,23
+newtype SafeString SafeString24,25
+newtype SafeString = SafeString SafeString24,25
+newtype SafeString = SafeString { unwrapSafeString unwrapSafeString24,25
+instance instance27,28
+prop_codecRAWPGM prop_codecRAWPGM30,31
+prop_codecRAWPGM prop_codecRAWPGM31,32
+prop_codecBMP prop_codecBMP34,35
 prop_codecBMP prop_codecBMP35,36
-prop_codecBMP prop_codecBMP36,37
-runTests runTests46,47
-runTests runTests47,48
-main main50,51
-main main51,52
+prop_codecAny prop_codecAny38,39
+prop_codecAny prop_codecAny39,40
+main main45,46
+main main46,47
+tests tests48,49
+tests tests49,50
