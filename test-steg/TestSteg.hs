@@ -3,8 +3,6 @@ module Main
 
 import           System.FilePath ((</>))
 import           System.Directory (removeFile)
-import           Control.Applicative ((<$>))
-
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Maybe (fromJust)
 import           Steg.Parse (dig, bury')
