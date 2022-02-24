@@ -10,10 +10,6 @@
 -- |
 module Steg.Parse (dig, bury, bury') where
 
-<<<<<<< HEAD
-import Control.Applicative ((<$>))
-=======
->>>>>>> 60adacbd7a33e7dda6b6833bb14e1bffc2909f80
 import qualified Data.Binary.Strict.BitGet as BG
 import Data.Bits (clearBit, setBit)
 import qualified Data.ByteString as B
