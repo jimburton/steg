@@ -19,10 +19,10 @@ import           qualified Codec.BMP as BMP
 
 -- | The type of parsed BMPs
 data BMPmap = BMPmap {
-      bmpHeader :: B.ByteString
-      , bmpData :: B.ByteString
-      , theBMP  :: BMP.BMP
-    }
+  bmpHeader :: B.ByteString -- ^ The header.
+  , bmpData :: B.ByteString -- ^ The data.
+  , theBMP  :: BMP.BMP      -- ^ The entire BMP in the BMP lib datatype. 
+  }
 
 instance Steg BMPmap where
     getData      = bmpData
