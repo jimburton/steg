@@ -11,26 +11,25 @@
 module Main
     where
 
-import Data.Maybe (fromJust)
 import Steg.Parse (dig, bury)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode (ExitFailure))
 
 -- | Lookup table mapping command-line options to functions. 
-dispatch :: [(String, [String] -> IO ())]  
-dispatch =  [ ("bury", buryAct)  
-            , ("dig", digAct)  
-            ]  
+dispatch :: [(String, [String] -> IO ())]
+dispatch =  [ ("bury", buryAct)
+            , ("dig", digAct)
+            ]
 
 
 -- | Bury some text. 
 buryAct :: [String] -> IO ()
 buryAct (inP:msgP:outP:_) = bury inP msgP outP
 buryAct _                 = usageAndExit
-  
+
 -- | Dig some text. 
 digAct :: [String] -> IO ()
-digAct (inP:_) = dig inP >>= putStrLn . fromJust
+digAct (inP:_) = dig inP >>= mapM_ putStrLn
 digAct _       = usageAndExit
 
 usage :: String
