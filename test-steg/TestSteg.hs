@@ -5,13 +5,13 @@ import           System.FilePath ((</>))
 import           System.Directory (removeFile)
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Maybe (fromJust)
-import           Steg.Parse (dig, bury')
+import           Steg.Parse (dig, buryByteString)
 import           Test.QuickCheck (Property)
-import           Test.QuickCheck.Arbitrary
-import           Test.QuickCheck.Gen
+import           Test.QuickCheck.Arbitrary ( Arbitrary(arbitrary) )
+import           Test.QuickCheck.Gen ( elements, listOf1, Gen )
 import           Test.QuickCheck.Monadic (assert, monadicIO, run)
-import           Test.Framework
-import           Test.Framework.Providers.QuickCheck2
+import           Test.Framework ( defaultMain, Test )
+import           Test.Framework.Providers.QuickCheck2 ( testProperty )
 
 samplesPath :: FilePath
 samplesPath = "etc/samples"
@@ -38,7 +38,7 @@ prop_codecBMP (SafeString msg) = do let inPath  = samplesPath </> "bmp/24bit/duc
 
 prop_codecAny :: String -> String -> String -> Property
 prop_codecAny msg inPath tmp = monadicIO test
-    where test = do run $ bury' inPath tmp (L8.toStrict $ L8.pack (msg++"\n"))
+    where test = do run $ buryByteString inPath tmp (L8.toStrict $ L8.pack (msg++"\n"))
                     readMsg <- run $ dig tmp
                     run $ removeFile tmp
                     assert $ msg == fromJust readMsg

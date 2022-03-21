@@ -8,7 +8,7 @@
 -- | Stability   :  provisional
 -- | Portability :  portable
 -- |
-module Steg.Parse (dig, bury, bury') where
+module Steg.Parse (dig, bury, buryByteString) where
 
 import qualified Data.Binary.Strict.BitGet as BG
 import Data.Bits (clearBit, setBit)
@@ -17,8 +17,8 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import Data.Char (chr)
 import Data.List (elemIndices)
 import Data.Word8 (Word8)
-import Steg.Format.BMP
-import Steg.Format.PGM
+import Steg.Format.BMP ( parseBMP )
+import Steg.Format.PGM ( parsePGM )
 import Steg.Format.StegFormat
   ( Format (..),
     Steg (..),
@@ -30,7 +30,7 @@ import Steg.Format.StegFormat
 bsToSteg :: B.ByteString -> Maybe StegBox
 bsToSteg bs =
   case idHeader bs of
-    Just PGM -> parsePGM bs
+    Just PGM -> Steg.Format.PGM.parsePGM bs
     Just BMP -> parseBMP bs
     Nothing -> Nothing
 
@@ -43,12 +43,11 @@ idHeader bs =
 -- | Bury some text in the data read in from the first file, writing
 -- | the result out to the second file.
 bury :: FilePath -> FilePath -> FilePath -> IO ()
-bury inPath txtPath outPath = B.readFile txtPath >>= bury' inPath outPath
+bury inPath txtPath outPath = B.readFile txtPath >>= buryByteString inPath outPath
 
 -- | A function like bury but which takes the message as a ByteString.
--- | Included to make testing easier.
-bury' :: FilePath -> FilePath -> B.ByteString -> IO ()
-bury' inPath outPath bs = do
+buryByteString :: FilePath -> FilePath -> B.ByteString -> IO ()
+buryByteString inPath outPath bs = do
   mg <- bsToSteg <$> B.readFile inPath
   case mg of
     Nothing -> do
