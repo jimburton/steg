@@ -3,13 +3,12 @@
 
 name:                steg
 version:             0.1.0.0
-synopsis:            Simple steganography tool, hiding and retrieving
-                     messages in image files.
+synopsis:            Simple steganography tool
 -- description:         
 license:             MIT
 license-file:        LICENSE
 author:              Jim Burton
-maintainer:          jimburton1@gmail.com
+maintainer:          j.burton@brighton.ac.uk
 -- copyright:           
 -- category:            
 build-type:          Simple
