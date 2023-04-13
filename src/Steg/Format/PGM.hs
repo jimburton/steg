@@ -4,7 +4,7 @@ Description :  Code relating to parsing PGM files.
 Copyright   :  (c) Jim Burton
 License     :  MIT
 
-Maintainer  :  j.burton@brighton.ac.uk
+Maintainer  :  jimburton1@gmail.com
 Stability   :  provisional 
 Portability :  portable 
 

@@ -5,7 +5,7 @@
 -- | Copyright   :  (c) Jim Burton
 -- | License     :  MIT
 -- |
--- | Maintainer  :  j.burton@brighton.ac.uk
+-- | Maintainer  :  jimburton1@gmail.com
 -- | Stability   :  provisional 
 -- | Portability :  portable 
 -- |
@@ -21,10 +21,10 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Char8 as L8
 
 -- | StegBox is a wrapper type that uses an existential type to
--- |     hide the type of the value it carries around, but
--- |     reveal its value. This provides some opportunities
--- |     to write functions polymorphically that would otherwise be
--- |     more clunky.
+-- | hide the type of the value it carries around, but
+-- | reveal its value. This provides some opportunities
+-- | to write functions polymorphically that would otherwise be
+-- | more clunky.
 data StegBox = forall n. Steg n => StegBox n
 
 -- | Steg is the type of image formats used by the program. 
