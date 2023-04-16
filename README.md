@@ -30,7 +30,7 @@ Sosuke had been relaxing for some time on the veranda...
 
 You shouldn't be able to see any difference if you inspect the two images 
 yourself. However, if you have `imagemagick` installed you can generate an
-image that highlights the differences in each correposnding pair of pixels:
+image that highlights the differences in each corresponding pair of pixels:
 
 ```
 $ compare etc/samples/24bit/duck.bmp ~/tmp/image.bmp ~/tmp/difference.bmp
