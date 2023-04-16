@@ -10,8 +10,7 @@
 -- |
 module Steg.Parse (dig, bury, buryByteString) where
 
-import qualified Data.Binary.Strict.BitGet as BG
-import Data.Bits (clearBit, setBit)
+import qualified Data.Bits as Bits
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Char8 as L8
 import Data.Char (chr)
@@ -32,7 +31,7 @@ bsToSteg bs =
   case idHeader bs of
     Just PGM -> Steg.Format.PGM.parsePGM bs
     Just BMP -> parseBMP bs
-    Nothing -> Nothing
+    Nothing  -> Nothing
 
 -- | Identify the format of some data from its magic number.
 idHeader :: B.ByteString -> Maybe Format
@@ -92,13 +91,12 @@ getLSBs = B.foldr (\x acc -> either error (: acc) (getLSB (B.pack [x]))) []
 
 -- | Get the LSB from a ByteString, which should contain a single word.
 getLSB :: B.ByteString -> Either String Bool
-getLSB bs = BG.runBitGet bs $ do
-  BG.skip 7
-  BG.getBit
-
+getLSB bs = let bits = takeByte bs in
+  if length bits == 8 then Right (last bits) else Left "Could not get LSB"
+  
 -- | Set the LSB in an 8-bit Word.
 setLSB :: Bool -> Word8 -> Word8
-setLSB b w = if b then setBit w 0 else clearBit w 0
+setLSB b w = if b then Bits.setBit w 0 else Bits.clearBit w 0
 
 -- | Transform an 8-bit Word into a list of Bools.
 wordToBits :: Integral a => a -> [a]
@@ -123,3 +121,10 @@ modifyLSBs bs (w : ws) =
 -- | Convert binary to decimal.
 binToDec :: [Bool] -> Int
 binToDec = sum . map (2 ^) . elemIndices True . reverse
+
+takeNBits :: Int -> B.ByteString -> [Bool]
+takeNBits n bs = reverse $ take n $ B.foldl' toBool [] bs
+  where toBool acc x = (Bits.testBit x <$> [0..(Bits.finiteBitSize x)]) ++ acc
+
+takeByte :: B.ByteString -> [Bool]
+takeByte = takeNBits 8

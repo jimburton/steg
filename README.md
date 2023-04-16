@@ -23,7 +23,7 @@ $ cabal configure --enable-tests
 $ cabal install
 $ cat etc/samples/soseki.txt
 Sosuke had been relaxing for some time on the veranda...
-$ cabal run steg -- bury ~/tmp/image.bmp etc/samples/soseki.txt etc/samples/bmp/24bit/duck.bmp
+$ cabal run steg -- bury etc/samples/bmp/24bit/duck.bmp etc/samples/soseki.txt ~/tmp/image.bmp 
 $ cabal run steg -- dig ~/tmp/image.bmp
 Sosuke had been relaxing for some time on the veranda...
 ````
@@ -114,6 +114,10 @@ Ways to improve the program
 * Add support for more image formats. There are several codecs
   [available on hackage](https://hackage.haskell.org/packages/#cat:Codec),
   or follow the approach in `Steg.PGM` to write your own.
+* Add support for different character encodings. The code currently assumes
+  that a character is stored in a single byte, which won't work for
+  encodings like `utf16`. Detect the character encoding when reading a file 
+  and read the right number of bits for each character. 
 * Change the CLI to use `System.GetOpt` and be more flexible by adding
   options to read in the message from `stdin`, output the result to
   `stdout` and so on.
