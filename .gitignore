@@ -12,4 +12,6 @@ cabal.config
 cabal.project.local
 cabal.project*
 **/\#*
+**/\.\#*
 *.~undo-tree~
+\#*

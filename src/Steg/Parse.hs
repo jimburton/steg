@@ -25,6 +25,8 @@ import Steg.Format.StegFormat
     magicNumbers,
   )
 
+import Debug.Trace ( trace )
+
 -- | Parse a ByteString
 bsToSteg :: B.ByteString -> Maybe StegBox
 bsToSteg bs =
@@ -84,7 +86,23 @@ boolsToStr :: [Bool] -> String
 boolsToStr bs =
   if length bs < 8
     then ""
-    else show (chr $ binToDec (take 8 bs)) ++ boolsToStr (drop 8 bs)
+    else 
+      let byte1 = take 8 bs
+          -- find out how many bytes the next char uses, 1 to 4,
+          -- by pattern matching on the first byte.
+          numBits (True:True:False:_)           = 2*8
+          numBits (True:True:True:False:_)      = 3*8
+          numBits (True:True:True:True:False:_) = 4*8
+          numBits _                             = 8
+          num = numBits byte1
+          -- bit mask for 2 byte code point: 110xxxxx 10xxxxxx
+          maskBits 16 = take 5 (drop 3 bs) <> take 6 (drop 10 bs)
+          -- bit mask for 3 byte code point: 1110xxxx 10xxxxxx 10xxxxxx
+          maskBits 24 = take 4 (drop 4 bs) <> take 6 (drop 10 bs) <> take 6 (drop 18 bs)
+          -- bit mask for 4 byte code point: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+          maskBits 32 = take 3 (drop 5 bs) <> take 6 (drop 10 bs) <> take 6 (drop 18 bs) <> take 6 (drop 26 bs)
+          maskBits _  = take 8 bs in
+        (chr $ binToDec (maskBits num)) : boolsToStr (drop num bs)
 
 getLSBs :: B.ByteString -> [Bool]
 getLSBs = B.foldr (\x acc -> either error (: acc) (getLSB (B.pack [x]))) []
