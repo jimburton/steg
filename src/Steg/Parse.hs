@@ -25,8 +25,6 @@ import Steg.Format.StegFormat
     magicNumbers,
   )
 
-import Debug.Trace ( trace )
-
 -- | Parse a ByteString
 bsToSteg :: B.ByteString -> Maybe StegBox
 bsToSteg bs =
@@ -90,11 +88,11 @@ boolsToStr bs =
       let byte1 = take 8 bs
           -- find out how many bytes the next char uses, 1 to 4,
           -- by pattern matching on the first byte.
-          numBits (True:True:False:_)           = 2*8
-          numBits (True:True:True:False:_)      = 3*8
-          numBits (True:True:True:True:False:_) = 4*8
-          numBits _                             = 8
-          num = numBits byte1
+          utfBytes (True:True:False:_)           = 2
+          utfBytes (True:True:True:False:_)      = 3
+          utfBytes (True:True:True:True:False:_) = 4
+          utfBytes _                             = 1
+          num = (utfBytes byte1) * 8
           -- bit mask for 2 byte code point: 110xxxxx 10xxxxxx
           maskBits 16 = take 5 (drop 3 bs) <> take 6 (drop 10 bs)
           -- bit mask for 3 byte code point: 1110xxxx 10xxxxxx 10xxxxxx
